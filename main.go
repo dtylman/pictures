@@ -1,50 +1,30 @@
 package main
 
 import (
-	"bitbucket.org/taruti/mimemagic"
 	"fmt"
+
+	"github.com/dtylman/pictures/db"
+	"github.com/dtylman/pictures/picture"
+	"github.com/dtylman/pictures/server"
+	"github.com/dtylman/pictures/server/route"
+	"github.com/jasonwinn/geocoder"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/mknote"
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
-func walky(path string, info os.FileInfo, _ error) error {
+func indexOne(path string, info os.FileInfo, _ error) error {
 	if !info.IsDir() {
 		if info.Size() > 0 {
-			file, err := os.Open(path)
+			i, err := picture.NewIndex(path, info)
 			if err != nil {
-				return err
-			}
-			defer file.Close()
-			sig := make([]byte, 1024)
-			_, err = file.Read(sig)
-			if err != nil {
-				return err
-			}
-			mimeType := mimemagic.Match("", sig)
-			mimeType = strings.Split(mimeType, "/")[0]
-			if mimeType == "image" || mimeType == "video" {
-				_, err = file.Seek(0, 0)
+				log.Println(err)
+			} else {
+				err = db.Index(i)
 				if err != nil {
-					return err
-				}
-				x, err := exif.Decode(file)
-				if err != nil {
-					log.Println(path, err)
-				} else {
-					time, err := x.DateTime()
-					if err == nil {
-						log.Println(time.Year(), time.Month())
-					}
-					lat, long, err := x.LatLong()
-					if err != nil {
-						log.Println(path, err)
-					} else {
-						log.Println(path, lat, long)
-					}
+					log.Println(err)
 				}
 			}
 		}
@@ -52,14 +32,22 @@ func walky(path string, info os.FileInfo, _ error) error {
 	return nil
 }
 
-func worky() error {
-	return filepath.Walk("", walky)
+func index(rootPath string) error {
+	return filepath.Walk(rootPath, indexOne)
+}
+
+func indexPictures() {
+	geocoder.SetAPIKey("8cCGEGGioKhpCLPjhAG44NfXYaXs9jCk")
+	exif.RegisterParsers(mknote.All...)
+	err := index("/home/danny/Pictures")
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 func main() {
-	exif.RegisterParsers(mknote.All...)
-	err := worky()
+	err := server.Start(route.LoadHTTP())
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
 }
