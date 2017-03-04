@@ -33,6 +33,8 @@ func routes() *httprouter.Router {
 
 	r.GET("/about", hr.Handler(alice.New().ThenFunc(controller.About)))
 	r.GET("/settings", hr.Handler(alice.New().ThenFunc(controller.Settings)))
+	r.POST("/settings", hr.Handler(alice.New().ThenFunc(controller.Settings)))
+
 	return r
 }
 

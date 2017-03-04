@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/dtylman/pictures/conf"
 	"github.com/dtylman/pictures/db"
 	"github.com/dtylman/pictures/picture"
 	"github.com/dtylman/pictures/server"
@@ -46,7 +47,11 @@ func indexPictures() {
 }
 
 func main() {
-	err := server.Start(route.LoadHTTP())
+	err := conf.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = server.Start(route.LoadHTTP())
 	if err != nil {
 		log.Fatal(err)
 	}
