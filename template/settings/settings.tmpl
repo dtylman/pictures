@@ -18,7 +18,7 @@
         <div class="form-group">
             <label class="control-label col-sm-2">Backup Folder:</label>
             <div class="col-sm-10">
-                <input type="password" class="form-control" id="backup_folder" name="backup_folder"
+                <input type="text" class="form-control" id="backup_folder" name="backup_folder"
                        value="{{.backup_folder}}">
             </div>
         </div>
@@ -27,22 +27,23 @@
             <div class="col-sm-10">
 
                 {{range $n := .source_folders}}
-                <ul class="list-group">
-                    <li class="list-group-item">
-                        <label>{{.}}</label>
-                        <button type="submit" class="btn btn-default" value="{{.}}" name="delete">Delete</button>
-                    </li>
-
-                </ul>
+                <div class="input-group">
+                    <input type="text" disabled="true" class="form-control" value="{{.}}"/>
+                    <span class="input-group-btn">
+                        <button type="submit" class="btn btn-default" formmethod="post"
+                                formaction="/settings/removesourcefolder/{{.}}">
+                            <span class="glyphicon glyphicon glyphicon-trash" aria-hidden="true"></span>
+                        </button>
+                    </span>
+                </div>
                 {{end}}
+
                 <div class="input-group">
                     <input type="text" name="source_folder" id="source_folder" class="form-control"
                            placeholder="Add source folder ..."/>
                     <span class="input-group-btn">
-                  <button type="button" class="browse btn btn-default">Browse</button>
-                                  <button type="submit" class="btn btn-default">Add</button>
-
-            </span>
+                        <button type="submit" class="btn btn-default">Add</button>
+                    </span>
                 </div>
             </div>
         </div>

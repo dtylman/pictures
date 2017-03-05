@@ -2,8 +2,9 @@ package controller
 
 import (
 	"github.com/dtylman/pictures/conf"
-	"github.com/dtylman/pictures/server/session"
 	"github.com/dtylman/pictures/server/view"
+	"github.com/gorilla/context"
+	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
 
@@ -28,8 +29,15 @@ func Settings(w http.ResponseWriter, r *http.Request) {
 	v.Vars["backup_folder"] = conf.Options.BackupFolder
 	v.Vars["quest_key"] = conf.Options.MapQuestAPIKey
 	v.Vars["source_folders"] = conf.Options.SourceFolders
-	if r.FormValue("delete") != "" {
-		session.Instance(r).AddFlash("lala", "one", "two")
-	}
 	v.Render(w)
+}
+
+func RemoveSourceFolder(w http.ResponseWriter, r *http.Request) {
+	var params httprouter.Params
+	params = context.Get(r, "params").(httprouter.Params)
+	folder := params.ByName("folder")
+	if folder != "" {
+		conf.RemoveSourceFolder(folder)
+	}
+	http.Redirect(w, r, "/settings", http.StatusFound)
 }

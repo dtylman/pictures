@@ -2,18 +2,34 @@ package db
 
 import (
 	"github.com/blevesearch/bleve"
-	"github.com/dtylman/pictures/picture"
+	"github.com/dtylman/pictures/conf"
+	"github.com/dtylman/pictures/indexer/picture"
 	"log"
+	"os"
 )
 
 var idx bleve.Index
 
 func init() {
-	var err error
-	idx, err = bleve.New("db.bleve", bleve.NewIndexMapping())
+	path, err := conf.DBPath()
 	if err != nil {
-		log.Println(err)
+		log.Fatal(err)
 	}
+	_, err = os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			idx, err = bleve.New(path, bleve.NewIndexMapping())
+			if err != nil {
+				log.Fatal(err)
+			}
+			return
+		}
+	}
+	idx, err = bleve.Open(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }
 
 func Index(picture *picture.Index) error {

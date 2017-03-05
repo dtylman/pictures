@@ -8,7 +8,8 @@ import (
 	"path/filepath"
 )
 
-const defaultConfFileName = ".pictures"
+const defaultConfFileName = "conf"
+const defaultDBFileName = "pictures.db"
 
 var Options struct {
 	MapQuestAPIKey string   `json:"map_quest_api_key"`
@@ -17,13 +18,12 @@ var Options struct {
 }
 
 func init() {
-	//Options.SourceFolders = make([]string, 0)
-	Options.SourceFolders = []string{"one", "two", "three"}
+	Options.SourceFolders = make([]string, 0)
 }
 
 //Load loads conf for the current user
 func Load() error {
-	confFileName, err := getFileName()
+	confFileName, err := getPathForFile(defaultConfFileName)
 	if err != nil {
 		return err
 	}
@@ -40,23 +40,44 @@ func Load() error {
 	return json.Unmarshal(data, &Options)
 }
 
-func getFileName() (string, error) {
+func getPathForFile(fileName string) (string, error) {
 	user, err := user.Current()
 	if err != nil {
 		return "", err
 	}
-	confFileName := filepath.Join(user.HomeDir, defaultConfFileName)
+	appFolder := filepath.Join(user.HomeDir, ".pictures")
+	err = os.MkdirAll(appFolder, 0755)
+	if err != nil {
+		return "", err
+	}
+	confFileName := filepath.Join(appFolder, fileName)
 	return confFileName, err
 }
 
 func Save() error {
-	data, err := json.Marshal(&Options)
+	data, err := json.MarshalIndent(&Options, "", "    ")
 	if err != nil {
 		return err
 	}
-	confFileName, err := getFileName()
+	confFileName, err := getPathForFile(defaultConfFileName)
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(confFileName, data, 0755)
+	return ioutil.WriteFile(confFileName, data, 0644)
+}
+
+//RemoveSourceFolder removes a folder from the source folders
+func RemoveSourceFolder(removeFolder string) {
+	list := make([]string, 0)
+	for _, folder := range Options.SourceFolders {
+		if folder != removeFolder {
+			list = append(list, folder)
+		}
+	}
+	Options.SourceFolders = list
+}
+
+//DBPath returns the DB path
+func DBPath() (string, error) {
+	return getPathForFile(defaultDBFileName)
 }

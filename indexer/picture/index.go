@@ -58,7 +58,6 @@ func NewIndex(path string, info os.FileInfo) (*Index, error) {
 		return nil, err
 	}
 	pic.populateExif(file)
-	//pic.populateLocation()
 	return pic, nil
 }
 
@@ -93,12 +92,11 @@ func (i *Index) populateExif(file *os.File) {
 	}
 }
 
-func (i *Index) populateLocation() {
+//PopulateLocation adds location data from MapQuest to the index
+func (i *Index) PopulateLocation() error {
 	var err error
 	i.Location, err = geocoder.ReverseGeocode(i.Lat, i.Long)
-	if err != nil {
-		log.Println(err)
-	}
+	return err
 }
 
 func (i *Index) populateMD5(file *os.File) error {
