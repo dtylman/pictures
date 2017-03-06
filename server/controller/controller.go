@@ -2,10 +2,14 @@ package controller
 
 import (
 	"fmt"
+	"github.com/blevesearch/bleve"
+	"github.com/dtylman/pictures/db"
 	"github.com/dtylman/pictures/indexer"
 	"github.com/dtylman/pictures/indexer/runningindexer"
 	"github.com/dtylman/pictures/server/session"
 	"github.com/dtylman/pictures/server/view"
+	goriilacontext "github.com/gorilla/context"
+	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
 
@@ -22,12 +26,21 @@ func Search(w http.ResponseWriter, r *http.Request) {
 	// Display the view
 	v := view.New(r)
 	v.Name = "index/search"
-	if r.Method == http.MethodPost {
-		v.Vars["first_name"] = r.FormValue("text")
-	} else {
-		v.Vars["first_name"] = "Bart Simpson"
-	}
 
+	query := r.FormValue("query")
+	v.Vars["query"] = query
+	var sr *bleve.SearchResult
+	var err error
+	if query != "" {
+		sr, err = db.Query(bleve.NewTermQuery(query), 0, 25)
+	} else {
+		sr, err = db.QueryAll(0, 25)
+	}
+	if err != nil {
+		flash(r, view.FlashError, err.Error())
+	}
+	v.Vars["hits"] = sr.Hits
+	v.Vars["total"] = sr.Total
 	v.Render(w)
 }
 
@@ -74,4 +87,10 @@ func Backup(w http.ResponseWriter, r *http.Request) {
 }
 func flash(r *http.Request, messageType string, message string, args ...interface{}) {
 	session.Instance(r).AddFlash(view.Flash{fmt.Sprintf(message, args...), messageType})
+}
+
+func getParamByName(r *http.Request, name string) string {
+	var params httprouter.Params
+	params = goriilacontext.Get(r, "params").(httprouter.Params)
+	return params.ByName(name)
 }

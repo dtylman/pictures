@@ -2,6 +2,7 @@ package runningindexer
 
 import (
 	"errors"
+	"log"
 	"sync"
 )
 
@@ -62,4 +63,5 @@ func AddError(path string, err error) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	status.errors = append(status.errors, IndexError{Path: path, Error: err})
+	log.Println(path, err)
 }

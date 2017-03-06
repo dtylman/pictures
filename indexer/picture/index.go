@@ -3,6 +3,7 @@ package picture
 import (
 	"bitbucket.org/taruti/mimemagic"
 	"crypto/md5"
+	"encoding/base32"
 	"fmt"
 	"github.com/jasonwinn/geocoder"
 	"github.com/rwcarlsen/goexif/exif"
@@ -21,16 +22,16 @@ const (
 )
 
 type Index struct {
-	MD5      string                 `json:"md5"`
-	MimeType string                 `json:"mime_type"`
-	Path     string                 `json:"path"`
-	FileTime time.Time              `json:"file_time"`
-	Taken    time.Time              `json:"taken"`
-	Exif     map[string]interface{} `json:"exif"`
-	Lat      float64                `json:"lat"`
-	Long     float64                `json:"long"`
-	Place    string                 `json:"place"`
-	Location *geocoder.Location     `json:"location"`
+	MD5      string             `json:"md5"`
+	MimeType string             `json:"mime_type"`
+	Path     string             `json:"path"`
+	FileTime time.Time          `json:"file_time"`
+	Taken    time.Time          `json:"taken"`
+	Exif     map[string]string  `json:"exif"`
+	Lat      float64            `json:"lat"`
+	Long     float64            `json:"long"`
+	Place    string             `json:"place"`
+	Location *geocoder.Location `json:"location"`
 }
 
 func NewIndex(path string, info os.FileInfo) (*Index, error) {
@@ -77,7 +78,7 @@ func (i *Index) populateExif(file *os.File) {
 		log.Println(err)
 		return
 	}
-	i.Exif = make(map[string]interface{})
+	i.Exif = make(map[string]string)
 	err = x.Walk(i)
 	if err != nil {
 		log.Println(err)
@@ -109,6 +110,6 @@ func (i *Index) populateMD5(file *os.File) error {
 	if err != nil {
 		return err
 	}
-	i.MD5 = string(h.Sum(nil))
+	i.MD5 = base32.HexEncoding.EncodeToString(h.Sum(nil))
 	return nil
 }

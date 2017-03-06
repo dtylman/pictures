@@ -3,8 +3,6 @@ package controller
 import (
 	"github.com/dtylman/pictures/conf"
 	"github.com/dtylman/pictures/server/view"
-	"github.com/gorilla/context"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
 
@@ -33,9 +31,7 @@ func Settings(w http.ResponseWriter, r *http.Request) {
 }
 
 func RemoveSourceFolder(w http.ResponseWriter, r *http.Request) {
-	var params httprouter.Params
-	params = context.Get(r, "params").(httprouter.Params)
-	folder := params.ByName("folder")
+	folder := getParamByName(r, "folder")
 	if folder != "" {
 		conf.RemoveSourceFolder(folder)
 	}

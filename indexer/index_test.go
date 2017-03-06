@@ -2,6 +2,7 @@ package indexer
 
 import (
 	"github.com/dtylman/pictures/conf"
+	"github.com/dtylman/pictures/db"
 	"github.com/dtylman/pictures/indexer/runningindexer"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -9,6 +10,7 @@ import (
 )
 
 func TestStart(t *testing.T) {
+	conf.Options.SourceFolders = []string{"/home/danny/Pictures"}
 	t.Log(conf.Options.SourceFolders)
 	err := Start(runningindexer.Options{IndexLocation: false, ReIndex: false})
 	assert.NoError(t, err)
@@ -19,5 +21,12 @@ func TestStart(t *testing.T) {
 		time.Sleep(time.Second)
 		t.Log("Still running")
 	}
-	t.Log("Done")
+	sr, err := db.QueryAll(0, 100)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(sr.String())
+	for _, facet := range sr.Facets {
+		t.Log(facet)
+	}
 }
