@@ -8,16 +8,19 @@ import (
 	"github.com/jasonwinn/geocoder"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/mknote"
+	"log"
 	"os"
 	"path/filepath"
 )
+
+var indexer Indexer
 
 func init() {
 	exif.RegisterParsers(mknote.All...)
 }
 
 func Start(options Options) error {
-	err := SetStarted(options)
+	err := indexer.SetStarted(options)
 	if err != nil {
 		return err
 	}
@@ -33,57 +36,66 @@ func Start(options Options) error {
 }
 
 func Stop() {
-	SetDone()
+	indexer.SetDone()
 }
 
-func Status() {
+func IsRunning() bool {
+	return indexer.IsRunning()
+}
 
+func GetProgress() string {
+	return indexer.ProgressString()
 }
 
 func indexOne(path string, info os.FileInfo, e1 error) error {
 	if e1 != nil {
-		AddError(path, e1)
+		indexer.AddError(path, e1)
 		return nil
 	}
-	if !IsRunning() {
+	if !indexer.IsRunning() {
 		return errors.New("Indexer had stopped")
 	}
 	if !info.IsDir() {
 		if info.Size() > 0 {
 			i, err := picture.NewIndex(path, info)
 			if err != nil {
-				AddError(path, err)
+				indexer.AddError(path, err)
 			} else {
 				saveIndex(path, i)
 			}
 		}
+		indexer.progress.incFile(info.Size())
 	}
 	return nil
 }
 
 func index(rootPath string) error {
+	err := indexer.progress.init(rootPath)
+	if err != nil {
+		log.Println(err)
+	}
 	return filepath.Walk(rootPath, indexOne)
 }
 
 func indexPictures() {
-	defer SetDone()
+	defer indexer.SetDone()
 	for _, folder := range conf.Options.SourceFolders {
 		err := index(folder)
 		if err != nil {
-			AddError(folder, err)
+			indexer.AddError(folder, err)
 		}
 	}
 }
 
 func saveIndex(path string, i *picture.Index) {
-	if GetOptions().IndexLocation {
+	if indexer.GetOptions().IndexLocation {
 		err := i.PopulateLocation()
 		if err != nil {
-			AddError(path, err)
+			indexer.AddError(path, err)
 		}
 	}
 	err := db.Index(i)
 	if err != nil {
-		AddError(path, err)
+		indexer.AddError(path, err)
 	}
 }

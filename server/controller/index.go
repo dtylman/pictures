@@ -22,6 +22,9 @@ func Index(w http.ResponseWriter, r *http.Request) {
 			indexer.Stop()
 		}
 	}
+
 	v.Vars["index_running"] = indexer.IsRunning()
+	v.Vars["index_progress"] = indexer.GetProgress()
+
 	v.Render(w)
 }
