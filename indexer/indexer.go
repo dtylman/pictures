@@ -5,7 +5,6 @@ import (
 	"github.com/dtylman/pictures/conf"
 	"github.com/dtylman/pictures/db"
 	"github.com/dtylman/pictures/indexer/picture"
-	"github.com/dtylman/pictures/indexer/runningindexer"
 	"github.com/jasonwinn/geocoder"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/mknote"
@@ -17,8 +16,8 @@ func init() {
 	exif.RegisterParsers(mknote.All...)
 }
 
-func Start(options runningindexer.Options) error {
-	err := runningindexer.SetStarted(options)
+func Start(options Options) error {
+	err := SetStarted(options)
 	if err != nil {
 		return err
 	}
@@ -34,7 +33,7 @@ func Start(options runningindexer.Options) error {
 }
 
 func Stop() {
-	runningindexer.SetDone()
+	SetDone()
 }
 
 func Status() {
@@ -43,17 +42,17 @@ func Status() {
 
 func indexOne(path string, info os.FileInfo, e1 error) error {
 	if e1 != nil {
-		runningindexer.AddError(path, e1)
+		AddError(path, e1)
 		return nil
 	}
-	if !runningindexer.IsRunning() {
+	if !IsRunning() {
 		return errors.New("Indexer had stopped")
 	}
 	if !info.IsDir() {
 		if info.Size() > 0 {
 			i, err := picture.NewIndex(path, info)
 			if err != nil {
-				runningindexer.AddError(path, err)
+				AddError(path, err)
 			} else {
 				saveIndex(path, i)
 			}
@@ -67,24 +66,24 @@ func index(rootPath string) error {
 }
 
 func indexPictures() {
-	defer runningindexer.SetDone()
+	defer SetDone()
 	for _, folder := range conf.Options.SourceFolders {
 		err := index(folder)
 		if err != nil {
-			runningindexer.AddError(folder, err)
+			AddError(folder, err)
 		}
 	}
 }
 
 func saveIndex(path string, i *picture.Index) {
-	if runningindexer.GetOptions().IndexLocation {
+	if GetOptions().IndexLocation {
 		err := i.PopulateLocation()
 		if err != nil {
-			runningindexer.AddError(path, err)
+			AddError(path, err)
 		}
 	}
 	err := db.Index(i)
 	if err != nil {
-		runningindexer.AddError(path, err)
+		AddError(path, err)
 	}
 }

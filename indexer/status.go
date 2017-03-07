@@ -1,4 +1,4 @@
-package runningindexer
+package indexer
 
 import (
 	"errors"

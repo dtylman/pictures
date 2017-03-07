@@ -1,4 +1,4 @@
-package runningindexer
+package indexer
 
 type Options struct {
 	IndexLocation bool
