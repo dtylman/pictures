@@ -3,6 +3,7 @@ package indexer
 import (
 	"errors"
 	"fmt"
+	"github.com/c2h5oh/datasize"
 	"log"
 	"sync"
 )
@@ -67,5 +68,5 @@ func (i *Indexer) AddError(path string, err error) {
 func (i *Indexer) ProgressString() string {
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
-	return fmt.Sprintf("%s: %d files (%v Kbs)", i.progress.RootDir, i.progress.TotalFiles, i.progress.TotalSize/1024)
+	return fmt.Sprintf("%s: %d files (%s)", i.progress.RootDir, i.progress.TotalFiles, datasize.ByteSize(i.progress.TotalSize).HumanReadable())
 }

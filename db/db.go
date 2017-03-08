@@ -1,20 +1,24 @@
 package db
 
 import (
+	"encoding/json"
 	"github.com/blevesearch/bleve"
 	"github.com/blevesearch/bleve/document"
 	"github.com/blevesearch/bleve/search/query"
+	"github.com/boltdb/bolt"
 	"github.com/dtylman/pictures/conf"
 	"github.com/dtylman/pictures/indexer/picture"
-	"github.com/syndtr/goleveldb/leveldb/errors"
 	"log"
 	"os"
 )
 
-var idx bleve.Index
+var (
+	idx bleve.Index
+	bdb *bolt.DB
+)
 
 func init() {
-	path, err := conf.DBPath()
+	path, err := conf.BleveFolder()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -32,12 +36,37 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	boltPath, err := conf.BoltPath()
+	if err != nil {
+		log.Fatal(err)
+	}
+	bdb, err = bolt.Open(boltPath, 0644, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = bdb.Update(func(tx *bolt.Tx) error {
+		_, err = tx.CreateBucketIfNotExists([]byte("images"))
+		return err
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }
 
 func Index(picture *picture.Index) error {
-	log.Println(picture.Path)
-	return idx.Index(picture.MD5, picture)
+	log.Println("Indexing ", picture.Path)
+	err := idx.Index(picture.MD5, picture)
+	if err != nil {
+		return err
+	}
+	return bdb.Update(func(tx *bolt.Tx) error {
+		data, err := json.Marshal(picture)
+		if err != nil {
+			return err
+		}
+		return tx.Bucket([]byte("images")).Put([]byte(picture.MD5), data)
+	})
 }
 
 func QueryAll(from int, size int) (*bleve.SearchResult, error) {
@@ -49,19 +78,16 @@ func Query(q query.Query, from int, size int) (*bleve.SearchResult, error) {
 	return idx.Search(search)
 }
 
-func PathForImage(imageID string) (string, error) {
-	doc, err := idx.Document(imageID)
-	if err != nil {
-		return "", err
-	}
-	for _, field := range doc.Fields {
-		if field.Name() == "path" {
-			return string(field.Value()), nil
-		}
-	}
-	return "", errors.New("Image do not have a path field")
+//GetImage gets image info by image id
+func GetImage(imageID string) (*picture.Index, error) {
+	index := new(picture.Index)
+	return index, bdb.View(func(tx *bolt.Tx) error {
+		data := tx.Bucket([]byte("images")).Get([]byte(imageID))
+		return json.Unmarshal(data, index)
+	})
 }
 
+//GetImageDocument get the indexed document from bleve
 func GetImageDocument(imageID string) (*document.Document, error) {
 	return idx.Document(imageID)
 }

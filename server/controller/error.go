@@ -12,7 +12,7 @@ func Error404(w http.ResponseWriter, r *http.Request) {
 }
 
 // Error500 handles 500 - Internal Server Error
-func Error500(w http.ResponseWriter, r *http.Request) {
+func Error500(w http.ResponseWriter, r *http.Request, err error) {
 	w.WriteHeader(http.StatusInternalServerError)
-	fmt.Fprint(w, "Internal Server Error 500")
+	fmt.Fprint(w, "Internal Server Error 500: ", err.Error())
 }

@@ -8,8 +8,11 @@ import (
 	"path/filepath"
 )
 
-const defaultConfFileName = "conf"
-const defaultDBFileName = "pictures.db"
+const (
+	defaultConfFileName = "conf"
+	defaultBleveFolder  = "pictures.db"
+	defaultBoltFileName = "bolt.db"
+)
 
 var Options struct {
 	MapQuestAPIKey string   `json:"map_quest_api_key"`
@@ -77,7 +80,12 @@ func RemoveSourceFolder(removeFolder string) {
 	Options.SourceFolders = list
 }
 
-//DBPath returns the DB path
-func DBPath() (string, error) {
-	return getPathForFile(defaultDBFileName)
+//BleveFolder returns bleve path
+func BleveFolder() (string, error) {
+	return getPathForFile(defaultBleveFolder)
+}
+
+//BoltPath bold db file path
+func BoltPath() (string, error) {
+	return getPathForFile(defaultBoltFileName)
 }
