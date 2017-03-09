@@ -15,9 +15,14 @@
             </div>
         </div>
     </form>
-    <h4>Searching '{{.query}}',
-        <small>{{.total}} images found:</small>
+    <h4>Searching for <a href="#">'{{.query}}'</a>
+        <small>({{.total}} found)</small>
     </h4>
+    <div class="row">
+        {{range $facet := .facets}}
+        <div class="col-lg-2"><a href="#">{{.Term}} ({{.Count}})</a></div>
+        {{end}}
+    </div>
     <hr/>
     <div class="row">
     {{range $hit := .hits}}
