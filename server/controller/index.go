@@ -3,7 +3,6 @@ package controller
 import (
 	"github.com/dtylman/pictures/indexer"
 	"github.com/dtylman/pictures/server/view"
-	"log"
 	"net/http"
 )
 
@@ -12,7 +11,6 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	// Display the view
 	v := view.New(r)
 	v.Name = "index/index"
-	log.Println(r.FormValue("location"))
 	if r.Method == http.MethodPost {
 		action := r.FormValue("action")
 		if action == "start" {

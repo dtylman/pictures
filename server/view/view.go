@@ -124,14 +124,6 @@ func New(req *http.Request) *View {
 	// This is required for the view to access the request
 	v.request = req
 
-	// Get session
-	//	sess := session.Instance(v.request)
-
-	// Set the AuthLevel to auth if the user is logged in
-	//	if sess.Values["id"] != nil {
-	v.Vars["AuthLevel"] = "auth"
-	//	}
-
 	return v
 }
 
@@ -160,12 +152,6 @@ func (v *View) AssetTimePath(s string) (string, error) {
 
 // RenderSingle renders a template to the writer
 func (v *View) RenderSingle(w http.ResponseWriter) {
-
-	// Get the template collection from cache
-	/*mutex.RLock()
-	tc, ok := templateCollection[v.Name]
-	mutex.RUnlock()*/
-
 	// Get the plugin collection
 	mutexPlugins.RLock()
 	pc := pluginCollection

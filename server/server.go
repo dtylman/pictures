@@ -34,7 +34,9 @@ func init() {
 	view.LoadPlugins(
 		plugin.TagHelper(v),
 		plugin.NoEscape(),
-		plugin.PrettyTime())
+		plugin.PrettyTime(),
+		plugin.Base64(),
+	)
 }
 
 // Run starts the HTTP and/or HTTPS listener

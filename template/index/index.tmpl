@@ -24,25 +24,23 @@
         <hr/>
         <div class="form-check">
             <label class="form-check-label">
-                <input type="checkbox" class="form-check-input" name="location" value="{{.location}}">
+                <input type="checkbox" class="form-check-input" name="location">
                 Include Locations
             </label>
         </div>
         <div class="form-check">
             <label class="form-check-label">
-                <input type="checkbox" class="form-check-input" name="reindex" value="{{.reindex}}">
+                <input type="checkbox" class="form-check-input" name="reindex">
                 Abandon existing index
             </label>
         </div>
         <hr/>
 
-        <button type="submit" class="btn btn-primary" name="action" value="start">Submit</button>
+        <button type="submit" class="btn btn-primary" name="action" value="start">Start</button>
         {{end}}
     </form>
 
-
 </div>
 {{template "footer" .}}
-</div>
 {{end}}
 {{define "foot"}}{{end}}

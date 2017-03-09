@@ -1,13 +1,13 @@
 package controller
 
 import (
+	"github.com/blevesearch/bleve"
 	"github.com/dtylman/pictures/indexer/db"
 	"github.com/dtylman/pictures/server/view"
 	"github.com/nfnt/resize"
 	"image"
 	_ "image/gif"
 	"image/jpeg"
-	_ "image/jpeg"
 	_ "image/png"
 	"net/http"
 	"os"
@@ -52,24 +52,19 @@ func Thumb(w http.ResponseWriter, r *http.Request) {
 
 func ImageView(w http.ResponseWriter, r *http.Request) {
 	imageID := getRouterParam(r, "id")
-	doc, err := db.GetImageAsDocument(imageID)
+	req := bleve.NewSearchRequest(bleve.NewDocIDQuery([]string{imageID}))
+	req.Fields = []string{"*"}
+	sr, err := db.Search(req)
 	if err != nil {
-		flash(r, view.FlashError, err.Error())
+		flashError(r, err)
 	}
 
 	// Display the view
 	v := view.New(r)
-
-	details := make(map[string]string)
-	for _, field := range doc.Fields {
-		value := string(field.Value())
-		details[field.Name()] = value
-		if field.Name() == "path" {
-			v.Vars["image"] = filepath.Base(value)
-		}
-	}
 	v.Vars["id"] = imageID
-	v.Vars["details"] = details
+
+	v.Vars["details"] = sr.Hits[0].Fields
+	v.Vars["image"] = filepath.Base(sr.Hits[0].Fields["path"].(string))
 	v.Name = "image/view"
 	v.Render(w)
 }

@@ -36,6 +36,9 @@ func (l *locationCache) put(i *Index) {
 
 //PopulateLocation adds location data from MapQuest to the index
 func (i *Index) PopulateLocation() error {
+	if i.Lat == 0 || i.Long == 0 {
+		return nil
+	}
 	loc := cache.get(i.Lat, i.Long)
 	if loc != nil {
 		i.Location = loc

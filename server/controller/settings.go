@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/base64"
 	"github.com/dtylman/pictures/conf"
 	"github.com/dtylman/pictures/server/view"
 	"net/http"
@@ -27,13 +28,20 @@ func Settings(w http.ResponseWriter, r *http.Request) {
 	v.Vars["backup_folder"] = conf.Options.BackupFolder
 	v.Vars["quest_key"] = conf.Options.MapQuestAPIKey
 	v.Vars["source_folders"] = conf.Options.SourceFolders
+
 	v.Render(w)
 }
 
 func RemoveSourceFolder(w http.ResponseWriter, r *http.Request) {
-	folder := getRouterParam(r, "folder")
-	if folder != "" {
-		conf.RemoveSourceFolder(folder)
+	base64Folder := getRouterParam(r, "folder")
+	if base64Folder != "" {
+		folder, err := base64.StdEncoding.DecodeString(base64Folder)
+		if err != nil {
+			flashError(r, err)
+		} else {
+			conf.RemoveSourceFolder(string(folder))
+		}
+
 	}
 	http.Redirect(w, r, "/settings", http.StatusFound)
 }

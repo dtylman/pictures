@@ -3,7 +3,7 @@ package picture
 import (
 	"bitbucket.org/taruti/mimemagic"
 	"crypto/md5"
-	"encoding/base32"
+	"encoding/hex"
 	"fmt"
 	"github.com/jasonwinn/geocoder"
 	"github.com/rwcarlsen/goexif/exif"
@@ -103,6 +103,11 @@ func (i *Index) populateMD5(file *os.File) error {
 	if err != nil {
 		return err
 	}
-	i.MD5 = base32.HexEncoding.EncodeToString(h.Sum(nil))
+	i.MD5 = hex.EncodeToString(h.Sum(nil))
 	return nil
 }
+
+////Type is the document type required by bleve see here: http://www.blevesearch.com/docs/Index-Mapping/
+//func (i *Index) Type() string{
+//	return "picture"
+//}

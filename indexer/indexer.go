@@ -21,6 +21,7 @@ func init() {
 }
 
 func Start(options Options) error {
+	log.Println("Starting index with options: ", options)
 	err := indexer.SetStarted(options)
 	if err != nil {
 		return err
