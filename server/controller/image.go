@@ -52,7 +52,7 @@ func Thumb(w http.ResponseWriter, r *http.Request) {
 
 func ImageView(w http.ResponseWriter, r *http.Request) {
 	imageID := getRouterParam(r, "id")
-	doc, err := db.GetImageDocument(imageID)
+	doc, err := db.GetImageAsDocument(imageID)
 	if err != nil {
 		flash(r, view.FlashError, err.Error())
 	}

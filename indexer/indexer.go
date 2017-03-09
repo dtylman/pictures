@@ -5,6 +5,7 @@ import (
 	"github.com/dtylman/pictures/conf"
 	"github.com/dtylman/pictures/indexer/db"
 	"github.com/dtylman/pictures/indexer/picture"
+	"github.com/dtylman/pictures/indexer/remover"
 	"github.com/jasonwinn/geocoder"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/mknote"
@@ -84,6 +85,10 @@ func indexPictures() {
 		if err != nil {
 			indexer.AddError(folder, err)
 		}
+	}
+	err := remover.Remove()
+	if err != nil {
+		log.Println(err)
 	}
 }
 

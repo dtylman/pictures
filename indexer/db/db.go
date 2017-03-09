@@ -53,6 +53,7 @@ func init() {
 	}
 }
 
+//Index saves one picture into the database
 func Index(picture *picture.Index) error {
 	err := idx.Index(picture.MD5, picture)
 	if err != nil {
@@ -67,10 +68,12 @@ func Index(picture *picture.Index) error {
 	})
 }
 
+//QueryAll performs a bleve match-all query
 func QueryAll(from int, size int) (*bleve.SearchResult, error) {
 	return Query(bleve.NewMatchAllQuery(), size, from)
 }
 
+//Query performs a bleve search
 func Query(q query.Query, from int, size int) (*bleve.SearchResult, error) {
 	search := bleve.NewSearchRequestOptions(q, size, from, false)
 	return idx.Search(search)
@@ -85,7 +88,47 @@ func GetImage(imageID string) (*picture.Index, error) {
 	})
 }
 
-//GetImageDocument get the indexed document from bleve
-func GetImageDocument(imageID string) (*document.Document, error) {
+//GetImageAsDocument get the indexed document from bleve
+func GetImageAsDocument(imageID string) (*document.Document, error) {
 	return idx.Document(imageID)
+}
+
+type WalkImagesFunc func(key string, image *picture.Index, err error)
+
+//WalkImages executes function for all images in the database
+func WalkImages(wf WalkImagesFunc) {
+	bdb.View(func(tx *bolt.Tx) error {
+		c := tx.Bucket([]byte("images")).Cursor()
+		key, value := c.Next()
+		for key != nil && value != nil {
+			key, value = c.Next()
+			pic := new(picture.Index)
+			err := json.Unmarshal(value, pic)
+			wf(string(key), pic, err)
+		}
+		return nil
+	})
+}
+
+//Remove removes all items in keys
+func Remove(keys []string) error {
+	err := bdb.Update(func(tx *bolt.Tx) error {
+		for _, key := range keys {
+			err := tx.Bucket([]byte("images")).Delete([]byte(key))
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	for _, key := range keys {
+		err = idx.Delete(key)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
