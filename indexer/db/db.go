@@ -51,11 +51,9 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }
 
 func Index(picture *picture.Index) error {
-	log.Println("Indexing ", picture.Path)
 	err := idx.Index(picture.MD5, picture)
 	if err != nil {
 		return err

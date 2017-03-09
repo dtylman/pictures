@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/dtylman/pictures/indexer"
 	"github.com/dtylman/pictures/server/view"
+	"log"
 	"net/http"
 )
 
@@ -11,10 +12,12 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	// Display the view
 	v := view.New(r)
 	v.Name = "index/index"
+	log.Println(r.FormValue("location"))
 	if r.Method == http.MethodPost {
 		action := r.FormValue("action")
 		if action == "start" {
-			err := indexer.Start(indexer.Options{IndexLocation: false, ReIndex: false})
+			err := indexer.Start(
+				indexer.Options{IndexLocation: isChecked(r, "location"), ReIndex: isChecked(r, "reindex")})
 			if err != nil {
 				flashError(r, err)
 			}
@@ -25,6 +28,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 	v.Vars["index_running"] = indexer.IsRunning()
 	v.Vars["index_progress"] = indexer.GetProgress()
-
+	v.Vars["reindex"] = r.FormValue("reindex")
+	v.Vars["location"] = r.FormValue("location")
 	v.Render(w)
 }

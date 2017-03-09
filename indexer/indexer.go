@@ -3,7 +3,7 @@ package indexer
 import (
 	"errors"
 	"github.com/dtylman/pictures/conf"
-	"github.com/dtylman/pictures/db"
+	"github.com/dtylman/pictures/indexer/db"
 	"github.com/dtylman/pictures/indexer/picture"
 	"github.com/jasonwinn/geocoder"
 	"github.com/rwcarlsen/goexif/exif"
@@ -25,7 +25,6 @@ func Start(options Options) error {
 		return err
 	}
 	if options.IndexLocation == true {
-		//geocoder.SetAPIKey("8cCGEGGioKhpCLPjhAG44NfXYaXs9jCk")
 		if conf.Options.MapQuestAPIKey == "" {
 			return errors.New("API KEY for map quest is empty")
 		}
@@ -78,6 +77,7 @@ func index(rootPath string) error {
 }
 
 func indexPictures() {
+	log.Println("Indexing ")
 	defer indexer.SetDone()
 	for _, folder := range conf.Options.SourceFolders {
 		err := index(folder)
@@ -91,6 +91,7 @@ func saveIndex(path string, i *picture.Index) {
 	if indexer.GetOptions().IndexLocation {
 		err := i.PopulateLocation()
 		if err != nil {
+			log.Println(err)
 			indexer.AddError(path, err)
 		}
 	}

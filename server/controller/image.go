@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"github.com/dtylman/pictures/db"
+	"github.com/dtylman/pictures/indexer/db"
 	"github.com/dtylman/pictures/server/view"
 	"github.com/nfnt/resize"
 	"image"
@@ -16,7 +16,7 @@ import (
 
 // Image servers image file by ID
 func Image(w http.ResponseWriter, r *http.Request) {
-	imageID := getParamByName(r, "id")
+	imageID := getRouterParam(r, "id")
 	imageInfo, err := db.GetImage(imageID)
 	if err != nil {
 		Error500(w, r, err)
@@ -27,7 +27,7 @@ func Image(w http.ResponseWriter, r *http.Request) {
 
 // Thumb servers image thumbnail file by ID
 func Thumb(w http.ResponseWriter, r *http.Request) {
-	imageID := getParamByName(r, "id")
+	imageID := getRouterParam(r, "id")
 	imageInfo, err := db.GetImage(imageID)
 	if err != nil {
 		Error500(w, r, err)
@@ -51,7 +51,7 @@ func Thumb(w http.ResponseWriter, r *http.Request) {
 }
 
 func ImageView(w http.ResponseWriter, r *http.Request) {
-	imageID := getParamByName(r, "id")
+	imageID := getRouterParam(r, "id")
 	doc, err := db.GetImageDocument(imageID)
 	if err != nil {
 		flash(r, view.FlashError, err.Error())

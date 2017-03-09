@@ -31,7 +31,7 @@ func Settings(w http.ResponseWriter, r *http.Request) {
 }
 
 func RemoveSourceFolder(w http.ResponseWriter, r *http.Request) {
-	folder := getParamByName(r, "folder")
+	folder := getRouterParam(r, "folder")
 	if folder != "" {
 		conf.RemoveSourceFolder(folder)
 	}

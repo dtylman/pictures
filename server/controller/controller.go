@@ -3,7 +3,7 @@ package controller
 import (
 	"fmt"
 	"github.com/blevesearch/bleve"
-	"github.com/dtylman/pictures/db"
+	"github.com/dtylman/pictures/indexer/db"
 	"github.com/dtylman/pictures/server/session"
 	"github.com/dtylman/pictures/server/view"
 	gorillacontext "github.com/gorilla/context"
@@ -57,8 +57,12 @@ func flashError(r *http.Request, err error) {
 	flash(r, view.FlashError, err.Error())
 }
 
-func getParamByName(r *http.Request, name string) string {
+func getRouterParam(r *http.Request, name string) string {
 	var params httprouter.Params
 	params = gorillacontext.Get(r, "params").(httprouter.Params)
 	return params.ByName(name)
+}
+
+func isChecked(r *http.Request, name string) bool {
+	return r.FormValue(name) == "on"
 }
