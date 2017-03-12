@@ -1,22 +1,24 @@
 package picture
 
 import (
+	"fmt"
 	"github.com/jasonwinn/geocoder"
+	"github.com/pariz/gountries"
 	"sync"
 )
 
 type locationCache struct {
-	items map[float64]*geocoder.Location
+	items map[float64]*string
 	mutex sync.Mutex
 }
 
 var cache locationCache
 
 func init() {
-	cache.items = make(map[float64]*geocoder.Location)
+	cache.items = make(map[float64]*string)
 }
 
-func (l *locationCache) get(lat, long float64) *geocoder.Location {
+func (l *locationCache) get(lat, long float64) *string {
 	//https://github.com/perrygeo/pairing/blob/master/pairing/main.py
 	key := l.keyFor(lat, long)
 	l.mutex.Lock()
@@ -31,7 +33,7 @@ func (l *locationCache) keyFor(lat, long float64) float64 {
 func (l *locationCache) put(i *Index) {
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
-	l.items[l.keyFor(i.Lat, i.Long)] = i.Location
+	l.items[l.keyFor(i.Lat, i.Long)] = &i.Location
 }
 
 //PopulateLocation adds location data from MapQuest to the index
@@ -41,12 +43,20 @@ func (i *Index) PopulateLocation() error {
 	}
 	loc := cache.get(i.Lat, i.Long)
 	if loc != nil {
-		i.Location = loc
+		i.Location = *loc
 		return nil
 	}
 	var err error
-	i.Location, err = geocoder.ReverseGeocode(i.Lat, i.Long)
+	location, err := geocoder.ReverseGeocode(i.Lat, i.Long)
 	if err == nil {
+		query := gountries.New()
+		countryName := location.CountryCode
+		country, err := query.FindCountryByAlpha(location.CountryCode)
+		if err == nil {
+			countryName = country.Name.Common
+		}
+		i.Location = fmt.Sprintf("%s %s %s %s %s", location.Street, location.City, location.County,
+			countryName, location.PostalCode)
 		cache.put(i)
 	}
 	return err

@@ -33,7 +33,7 @@ func Search(w http.ResponseWriter, r *http.Request) {
 		query = bleve.NewMatchAllQuery()
 	}
 	req := bleve.NewSearchRequest(query)
-	req.AddFacet("Location", bleve.NewFacetRequest("location.adminArea3", 4))
+	req.AddFacet("Location", bleve.NewFacetRequest("location", 4))
 	takenFacet := bleve.NewFacetRequest("taken", 3)
 	takenFacet.AddDateTimeRange("Old", time.Unix(0, 0), time.Now().AddDate(0, -1, 0))
 	takenFacet.AddDateTimeRange("Last Month", time.Now().AddDate(0, -1, 0), time.Now())

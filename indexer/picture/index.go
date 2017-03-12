@@ -5,7 +5,6 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"github.com/jasonwinn/geocoder"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/tiff"
 	"github.com/syndtr/goleveldb/leveldb/errors"
@@ -22,16 +21,15 @@ const (
 )
 
 type Index struct {
-	MD5      string             `json:"md5"`
-	MimeType string             `json:"mime_type"`
-	Path     string             `json:"path"`
-	FileTime time.Time          `json:"file_time"`
-	Taken    time.Time          `json:"taken"`
-	Exif     map[string]string  `json:"exif"`
-	Lat      float64            `json:"lat"`
-	Long     float64            `json:"long"`
-	Place    string             `json:"place"`
-	Location *geocoder.Location `json:"location"`
+	MD5      string    `json:"md5"`
+	MimeType string    `json:"mime_type"`
+	Path     string    `json:"path"`
+	FileTime time.Time `json:"file_time"`
+	Taken    time.Time `json:"taken"`
+	Exif     string    `json:"exif"`
+	Lat      float64   `json:"lat"`
+	Long     float64   `json:"long"`
+	Location string    `json:"location"`
 }
 
 func NewIndex(path string, info os.FileInfo) (*Index, error) {
@@ -63,7 +61,7 @@ func NewIndex(path string, info os.FileInfo) (*Index, error) {
 }
 
 func (i *Index) Walk(name exif.FieldName, tag *tiff.Tag) error {
-	i.Exif[string(name)] = tag.String()
+	i.Exif += fmt.Sprintf("%s: %s ", name, tag.String())
 	return nil
 }
 
@@ -78,7 +76,7 @@ func (i *Index) populateExif(file *os.File) {
 		log.Println(err)
 		return
 	}
-	i.Exif = make(map[string]string)
+	i.Exif = ""
 	err = x.Walk(i)
 	if err != nil {
 		log.Println(err)

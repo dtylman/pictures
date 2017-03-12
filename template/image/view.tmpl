@@ -5,32 +5,35 @@
     <div class="page-header">
         <h1>{{.image}}</h1>
     </div>
-    <a href="/image/{{.id}}" class="thumbnail" width="100%">
-        <img src="/image/{{.id}}">
-    </a>
+    <div class="col-lg-9">
+        <caption>Image</caption>
+        <a href="/image/{{.id}}" class="thumbnail" width="100%">
+            <img src="/image/{{.id}}">
+        </a>
+    </div>
+    <div class="col-lg-3">
+        <caption>Details</caption>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Value</th>
+            </tr>
+            </thead>
 
-    <table class="table table-striped">
-        <caption>Image Details</caption>
-        <thead>
-        <tr>
-            <th>Name</th>
-            <th>Value</th>
-        </tr>
-        </thead>
+            <tbody>
+            {{range $key, $value := .details}}
+            <tr>
+                <td>{{$key}}</td>
+                <td>{{$value}}</td>
+            </tr>
 
-        <tbody>
-        {{range $key, $value := .details}}
-        <tr>
-            <td>{{$key}}</td>
-            <td>{{$value}}</td>
-        </tr>
+            {{end}}
 
-        {{end}}
+            </tbody>
 
-        </tbody>
-
-    </table>
-
+        </table>
+    </div>
     {{template "footer"}}
 </div>
 {{end}}
