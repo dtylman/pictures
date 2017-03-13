@@ -1,6 +1,6 @@
 
 OUTFILE="${CIRCLE_ARTIFACTS}/pictures"
-FOLDERS="template/ static/"
+FOLDERS=template/ static/
 
 all:
 	GOOS=windows go build .
