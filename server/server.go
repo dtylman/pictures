@@ -39,17 +39,26 @@ func init() {
 	)
 }
 
-// Run starts the HTTP and/or HTTPS listener
-func Start(httpHandlers http.Handler) error {
-	address, err := getAddress()
-	if err != nil {
-		return err
+// Start starts the HTTP and/or HTTPS listener
+func Start(httpHandlers http.Handler, browser string, useAddress string) error {
+	address := useAddress
+	if address == "" {
+		var err error
+		address, err = getAddress()
+		if err != nil {
+			return err
+		}
 	}
-	go startServer(address, httpHandlers)
-	time.Sleep(time.Second)
-	cmd := exec.Command("google-chrome", fmt.Sprintf("http://%s", address))
-	return cmd.Run()
-
+	if browser != "" {
+		go startServer(address, httpHandlers)
+		time.Sleep(time.Second)
+		cmd := exec.Command(browser, fmt.Sprintf("http://%s", address))
+		return cmd.Run()
+	}
+	fmt.Printf("Browse here: http://%v", address)
+	fmt.Println()
+	startServer(address, httpHandlers)
+	return nil
 }
 
 func getAddress() (string, error) {
