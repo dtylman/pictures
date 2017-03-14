@@ -19,17 +19,19 @@ func routes() *httprouter.Router {
 	r := httprouter.New()
 
 	// Set 404 handler
-	r.NotFound = alice.
-		New().
-		ThenFunc(controller.Error404)
+	r.NotFound = alice.New().ThenFunc(controller.Error404)
 
 	// Serve static files, no directory browsing
 	r.GET("/static/*filepath", hr.Handler(alice.New().ThenFunc(controller.Static)))
-	r.GET("/image/:id", hr.Handler(alice.New().ThenFunc(controller.Image)))
-	r.GET("/thumb/:id", hr.Handler(alice.New().ThenFunc(controller.Thumb)))
-	r.GET("/image/:id/view", hr.Handler(alice.New().ThenFunc(controller.ImageView)))
-	r.GET("/", hr.Handler(alice.New().ThenFunc(controller.Search)))
-	r.POST("/", hr.Handler(alice.New().ThenFunc(controller.Search)))
+	r.GET("/activeimage/:md5", hr.Handler(alice.New().ThenFunc(controller.ActiveImage)))
+	r.GET("/nextimage", hr.Handler(alice.New().ThenFunc(controller.NextImage)))
+	r.GET("/previmage", hr.Handler(alice.New().ThenFunc(controller.PrevImage)))
+	r.GET("/thumb/:hit/:md5", hr.Handler(alice.New().ThenFunc(controller.Thumb)))
+	r.GET("/image/:hit/:md5/view", hr.Handler(alice.New().ThenFunc(controller.ImageView)))
+	r.GET("/", hr.Handler(alice.New().ThenFunc(controller.SearchResults)))
+	r.POST("/search", hr.Handler(alice.New().ThenFunc(controller.Search)))
+	r.GET("/search", hr.Handler(alice.New().ThenFunc(controller.Search)))
+	r.GET("/page", hr.Handler(alice.New().ThenFunc(controller.Page)))
 	r.GET("/index", hr.Handler(alice.New().ThenFunc(controller.Index)))
 	r.POST("/index", hr.Handler(alice.New().ThenFunc(controller.Index)))
 	r.GET("/backup", hr.Handler(alice.New().ThenFunc(controller.Backup)))

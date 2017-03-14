@@ -2,61 +2,59 @@ package controller
 
 import (
 	"github.com/blevesearch/bleve"
-	"github.com/blevesearch/bleve/search"
 	"github.com/blevesearch/bleve/search/query"
-	"github.com/dtylman/pictures/indexer/db"
+	"github.com/dtylman/pictures/server/model"
 	"github.com/dtylman/pictures/server/view"
 	"net/http"
-	"time"
+	"strconv"
 )
 
-//FacetItem represents facet item in the display
-type FacetItem struct {
-	Name  string
-	Field string
-	Term  string
-	Count int
-}
+var mySearch *model.Search
 
-// Search displays the search page
+//Search performs new search
 func Search(w http.ResponseWriter, r *http.Request) {
-	// Display the view
-	v := view.New(r)
-	v.Name = "index/search"
-
 	queryString := r.FormValue("query")
-	v.Vars["query"] = queryString
 	var query query.Query
 	if queryString != "" {
 		query = bleve.NewQueryStringQuery(queryString)
 	} else {
 		query = bleve.NewMatchAllQuery()
 	}
-	req := bleve.NewSearchRequest(query)
-	req.AddFacet("Location", bleve.NewFacetRequest("location", 4))
-	takenFacet := bleve.NewFacetRequest("taken", 3)
-	takenFacet.AddDateTimeRange("Old", time.Unix(0, 0), time.Now().AddDate(0, -1, 0))
-	takenFacet.AddDateTimeRange("Last Month", time.Now().AddDate(0, -1, 0), time.Now())
-	takenFacet.AddDateTimeRange("Last Week", time.Now().AddDate(0, 0, -7), time.Now())
-	req.AddFacet("Taken", takenFacet)
-	sr, err := db.Search(req)
+	var err error
+	mySearch, err = model.NewSearch(queryString, query)
 	if err != nil {
 		flashError(r, err)
-	} else {
-		v.Vars["facets"] = facetItems(sr.Facets)
-		v.Vars["hits"] = sr.Hits
-		v.Vars["total"] = sr.Total
 	}
-
-	v.Render(w)
+	SearchResults(w, r)
 }
 
-func facetItems(res search.FacetResults) []FacetItem {
-	items := make([]FacetItem, 0)
-	for fn, fr := range res {
-		for _, term := range fr.Terms {
-			items = append(items, FacetItem{Name: fn, Field: fr.Field, Term: term.Term, Count: term.Count})
+func Page(w http.ResponseWriter, r *http.Request) {
+	fromString := r.URL.Query().Get("from")
+	var err error
+	if fromString == "" {
+		err = mySearch.StartFrom(0)
+	} else {
+		from, err := strconv.Atoi(fromString)
+		if err == nil {
+			err = mySearch.StartFrom(from)
 		}
 	}
-	return items
+	if err != nil {
+		flashError(r, err)
+	}
+	SearchResults(w, r)
+}
+
+// Search displays the search page
+func SearchResults(w http.ResponseWriter, r *http.Request) {
+	v := view.New(r)
+	v.Name = "index/search"
+	if mySearch != nil {
+		v.Vars["query"] = mySearch.QueryString
+		v.Vars["facets"] = mySearch.Facets
+		v.Vars["thumbs"] = mySearch.Thumbs
+		v.Vars["total"] = mySearch.Result.Total
+		v.Vars["pages"] = mySearch.Pages
+	}
+	v.Render(w)
 }

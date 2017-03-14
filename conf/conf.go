@@ -3,6 +3,7 @@ package conf
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -11,6 +12,7 @@ import (
 const (
 	defaultConfFileName = "conf"
 	defaultBleveFolder  = "pictures.db"
+	defaultThumbFolder  = "thumbs"
 	defaultBoltFileName = "bolt.db"
 )
 
@@ -18,10 +20,24 @@ var Options struct {
 	MapQuestAPIKey string   `json:"map_quest_api_key"`
 	SourceFolders  []string `json:"source_folders"`
 	BackupFolder   string   `json:"backup_folder"`
+	SearchPageSize int      `json:"search_page_size"`
+	ThumbX         uint     `json:"thumb_x"`
+	ThumbY         uint     `json:"thumb_y"`
 }
 
 func init() {
 	Options.SourceFolders = make([]string, 0)
+	Options.SearchPageSize = 12
+	Options.ThumbX = 300
+	Options.ThumbY = 200
+	thumbPath, err := ThumbPath()
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = os.MkdirAll(thumbPath, 0755)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 //Load loads conf for the current user
@@ -80,12 +96,16 @@ func RemoveSourceFolder(removeFolder string) {
 	Options.SourceFolders = list
 }
 
-//BleveFolder returns bleve path
-func BleveFolder() (string, error) {
+//BlevePath returns bleve path
+func BlevePath() (string, error) {
 	return getPathForFile(defaultBleveFolder)
 }
 
 //BoltPath bold db file path
 func BoltPath() (string, error) {
 	return getPathForFile(defaultBoltFileName)
+}
+
+func ThumbPath() (string, error) {
+	return getPathForFile(defaultThumbFolder)
 }

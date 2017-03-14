@@ -13,6 +13,7 @@ import (
 	"sync"
 
 	"github.com/dtylman/pictures/server/session"
+	"github.com/gorilla/sessions"
 )
 
 func init() {
@@ -159,12 +160,6 @@ func (v *View) RenderSingle(w http.ResponseWriter) {
 
 	templateList := []string{v.Name}
 
-	// List of template names
-	/*templateList := make([]string, 0)
-	templateList = append(templateList, rootTemplate)
-	templateList = append(templateList, v.Name)
-	templateList = append(templateList, childTemplates...)*/
-
 	// Loop through each template and test the full path
 	for i, name := range templateList {
 		// Get the absolute path of the root template
@@ -178,23 +173,16 @@ func (v *View) RenderSingle(w http.ResponseWriter) {
 
 	// Determine if there is an error in the template syntax
 	templates, err := template.New(v.Name).Funcs(pc).ParseFiles(templateList...)
-
 	if err != nil {
 		http.Error(w, "Template Parse Error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	// Cache the template collection
-	/*mutex.Lock()
-	templateCollection[v.Name] = templates
-	mutex.Unlock()*/
 
 	// Save the template collection
 	tc := templates
 
 	// Get session
 	sess := session.Instance(v.request)
-
 	// Get the flashes for the template
 	if flashes := sess.Flashes(); len(flashes) > 0 {
 		v.Vars["flashes"] = make([]Flash, len(flashes))
@@ -288,7 +276,6 @@ func (v *View) Render(w http.ResponseWriter) {
 
 	// Display the content to the screen
 	err := tc.Funcs(pc).ExecuteTemplate(w, rootTemplate+"."+v.Extension, v.Vars)
-
 	if err != nil {
 		http.Error(w, "Template File Error: "+err.Error(), http.StatusInternalServerError)
 	}
@@ -307,10 +294,8 @@ func Validate(req *http.Request, required []string) (bool, string) {
 
 // SendFlashes allows retrieval of flash messages for using with Ajax
 func (v *View) SendFlashes(w http.ResponseWriter) {
-	// Get session
 	sess := session.Instance(v.request)
-
-	flashes := peekFlashes(w, v.request)
+	flashes := peekFlashes(sess)
 	sess.Save(v.request, w)
 
 	js, err := json.Marshal(flashes)
@@ -323,12 +308,8 @@ func (v *View) SendFlashes(w http.ResponseWriter) {
 	w.Write(js)
 }
 
-func peekFlashes(w http.ResponseWriter, r *http.Request) []Flash {
-	// Get session
-	sess := session.Instance(r)
-
+func peekFlashes(sess *sessions.Session) []Flash {
 	var v []Flash
-
 	// Get the flashes for the template
 	if flashes := sess.Flashes(); len(flashes) > 0 {
 		v = make([]Flash, len(flashes))
@@ -342,7 +323,6 @@ func peekFlashes(w http.ResponseWriter, r *http.Request) []Flash {
 
 		}
 	}
-
 	return v
 }
 

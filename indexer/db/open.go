@@ -14,7 +14,7 @@ var (
 )
 
 func openBleve() error {
-	path, err := conf.BleveFolder()
+	path, err := conf.BlevePath()
 	if err != nil {
 		return err
 	}

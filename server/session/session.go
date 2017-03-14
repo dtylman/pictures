@@ -4,13 +4,16 @@ import (
 	"net/http"
 
 	"github.com/gorilla/sessions"
+	"log"
 )
 
 var (
 	// Store is the cookie store
-	Store *sessions.CookieStore
+	store *sessions.CookieStore
 	// Name is the session name
-	Name string
+	name string
+	//Cache holds all sessions server side state
+	Cache State
 )
 
 // Session stores session level information
@@ -22,15 +25,23 @@ type Session struct {
 
 // Configure the session cookie store
 func Configure(s Session) {
-	Store = sessions.NewCookieStore([]byte(s.SecretKey))
-	Store.Options = &s.Options
-	Name = s.Name
+	store = sessions.NewCookieStore([]byte(s.SecretKey))
+	store.Options = &s.Options
+	name = s.Name
+	Cache.init()
 }
 
-// Instance returns a new session, never returns an error
+// Instance returns a session
 func Instance(r *http.Request) *sessions.Session {
-	session, _ := Store.Get(r, Name)
-	return session
+	sess, err := store.Get(r, name)
+	if err != nil {
+		log.Fatal(err)
+		return nil
+	}
+	if sess.IsNew {
+		Cache.addSession(sess)
+	}
+	return sess
 }
 
 // Empty deletes all the current session values
@@ -39,4 +50,6 @@ func Empty(sess *sessions.Session) {
 	for k := range sess.Values {
 		delete(sess.Values, k)
 	}
+	Cache.deleteSession(sess)
+
 }

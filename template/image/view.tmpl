@@ -3,12 +3,14 @@
 {{define "content"}}
 <div class="container">
     <div class="page-header">
-        <h1>{{.image}}</h1>
+        <h1>{{.image.Name}}</h1>
+        <a href="/nextimage">next</a>
+        <a href="/previmage">prev</a>
     </div>
     <div class="col-lg-9">
-        <caption>Image</caption>
-        <a href="/image/{{.id}}" class="thumbnail" width="100%">
-            <img src="/image/{{.id}}">
+        <caption>{{.image.Location}}</caption>
+        <a href="/activeimage/{{.image.ID}}" class="thumbnail" width="100%">
+            <img src="/activeimage/{{.image.ID}}">
         </a>
     </div>
     <div class="col-lg-3">
@@ -22,7 +24,7 @@
             </thead>
 
             <tbody>
-            {{range $key, $value := .details}}
+            {{range $key, $value := .image.Details}}
             <tr>
                 <td>{{$key}}</td>
                 <td>{{$value}}</td>
