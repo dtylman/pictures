@@ -6,6 +6,7 @@ import (
 	"github.com/dtylman/pictures/indexer/db"
 	"github.com/dtylman/pictures/indexer/picture"
 	"github.com/dtylman/pictures/indexer/remover"
+	"github.com/dtylman/pictures/indexer/thumbs"
 	"github.com/jasonwinn/geocoder"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/mknote"
@@ -97,11 +98,14 @@ func saveIndex(path string, i *picture.Index) {
 	if indexer.GetOptions().IndexLocation {
 		err := i.PopulateLocation()
 		if err != nil {
-			log.Println(err)
 			indexer.AddError(path, err)
 		}
 	}
 	err := db.Index(i)
+	if err != nil {
+		indexer.AddError(path, err)
+	}
+	_, err = thumbs.MakeThumb(i.Path, i.MD5, true)
 	if err != nil {
 		indexer.AddError(path, err)
 	}

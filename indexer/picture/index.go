@@ -9,8 +9,10 @@ import (
 	"github.com/rwcarlsen/goexif/tiff"
 	"github.com/syndtr/goleveldb/leveldb/errors"
 	"io"
+
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -30,6 +32,7 @@ type Index struct {
 	Lat      float64   `json:"lat"`
 	Long     float64   `json:"long"`
 	Location string    `json:"location"`
+	Album    string    `json:"album"`
 }
 
 func NewIndex(path string, info os.FileInfo) (*Index, error) {
@@ -45,6 +48,8 @@ func NewIndex(path string, info os.FileInfo) (*Index, error) {
 	}
 	pic := &Index{}
 	pic.Path = path
+	folder, _ := filepath.Split(pic.Path)
+	pic.Album = filepath.Base(folder)
 	pic.FileTime = info.ModTime()
 	pic.MimeType = mimemagic.Match("", sig)
 	mimeType := strings.Split(pic.MimeType, "/")[0]
@@ -104,8 +109,3 @@ func (i *Index) populateMD5(file *os.File) error {
 	i.MD5 = hex.EncodeToString(h.Sum(nil))
 	return nil
 }
-
-////Type is the document type required by bleve see here: http://www.blevesearch.com/docs/Index-Mapping/
-//func (i *Index) Type() string{
-//	return "picture"
-//}

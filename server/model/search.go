@@ -5,6 +5,8 @@ import (
 	"github.com/blevesearch/bleve/search/query"
 	"github.com/dtylman/pictures/conf"
 	"github.com/dtylman/pictures/indexer/db"
+	"github.com/dtylman/pictures/indexer/thumbs"
+	"log"
 	"path/filepath"
 	"strconv"
 )
@@ -34,6 +36,11 @@ type ImageItem struct {
 	ID       string
 	Location string
 	Details  map[string]interface{}
+}
+
+type ThumbItem struct {
+	Path string
+	MD5  string
 }
 
 type Search struct {
@@ -82,6 +89,7 @@ func (s *Search) doQuery() error {
 	req := bleve.NewSearchRequestOptions(s.query, conf.Options.SearchPageSize, s.start, false)
 	req.Fields = []string{"*"}
 	req.AddFacet("Location", bleve.NewFacetRequest("location", 6))
+	req.AddFacet("Album", bleve.NewFacetRequest("album", 4))
 	var err error
 	s.Result, err = db.Search(req)
 	if err != nil {
@@ -117,6 +125,18 @@ func (s *Search) buildFacetItems() {
 	for fn, fr := range s.Result.Facets {
 		for _, term := range fr.Terms {
 			s.Facets = append(s.Facets, FacetItem{Name: fn, Field: fr.Field, Term: term.Term, Count: term.Count})
+		}
+	}
+}
+
+func (s *Search) buildThumbs() {
+	s.Thumbs = make([]ThumbItem, s.Result.Hits.Len())
+	for i := 0; i < s.Result.Hits.Len(); i++ {
+		s.Thumbs[i].MD5 = s.Result.Hits[i].Fields["md5"].(string)
+		var err error
+		s.Thumbs[i].Path, err = thumbs.MakeThumb(s.Result.Hits[i].Fields["path"].(string), s.Thumbs[i].MD5, false)
+		if err != nil {
+			log.Println(err)
 		}
 	}
 }
