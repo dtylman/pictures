@@ -36,6 +36,17 @@ func GetImage(imageID string) (*picture.Index, error) {
 	})
 }
 
+//HasImage returns tue if image wiith ID exists
+func HasImage(imageID string) bool {
+	var exists bool
+	bdb.View(func(tx *bolt.Tx) error {
+		data := tx.Bucket(imagesBucket).Get([]byte(imageID))
+		exists = data != nil
+		return nil
+	})
+	return exists
+}
+
 type WalkImagesFunc func(key string, image *picture.Index, err error)
 
 //WalkImages executes function for all images in the database

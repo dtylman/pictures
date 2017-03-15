@@ -63,7 +63,7 @@ func indexOne(path string, info os.FileInfo, e1 error) error {
 			if err != nil {
 				indexer.AddError(path, err)
 			} else {
-				saveIndex(path, i)
+				saveIndex(i)
 			}
 		}
 		indexer.progress.incFile(info.Size())
@@ -94,19 +94,24 @@ func indexPictures() {
 	}
 }
 
-func saveIndex(path string, i *picture.Index) {
-	if indexer.GetOptions().IndexLocation {
-		err := i.PopulateLocation()
-		if err != nil {
-			indexer.AddError(path, err)
+func saveIndex(newIndex *picture.Index) {
+	if !indexer.GetOptions().ReIndex {
+		if db.HasImage(newIndex.MD5) {
+			return
 		}
 	}
-	err := db.Index(i)
-	if err != nil {
-		indexer.AddError(path, err)
+	if indexer.GetOptions().IndexLocation {
+		err := newIndex.PopulateLocation()
+		if err != nil {
+			indexer.AddError(newIndex.Path, err)
+		}
 	}
-	_, err = thumbs.MakeThumb(i.Path, i.MD5, true)
+	err := db.Index(newIndex)
 	if err != nil {
-		indexer.AddError(path, err)
+		indexer.AddError(newIndex.Path, err)
+	}
+	_, err = thumbs.MakeThumb(newIndex.Path, newIndex.MD5, true)
+	if err != nil {
+		indexer.AddError(newIndex.Path, err)
 	}
 }

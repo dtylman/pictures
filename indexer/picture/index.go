@@ -61,7 +61,8 @@ func NewIndex(path string, info os.FileInfo) (*Index, error) {
 	if err != nil {
 		return nil, err
 	}
-	pic.populateExif(file)
+	_ = pic.populateExif(file)
+	//todo: add error
 	return pic, nil
 }
 
@@ -70,30 +71,32 @@ func (i *Index) Walk(name exif.FieldName, tag *tiff.Tag) error {
 	return nil
 }
 
-func (i *Index) populateExif(file *os.File) {
+func (i *Index) populateExif(file *os.File) error {
 	_, err := file.Seek(0, 0)
 	if err != nil {
-		log.Println(err)
-		return
+		return err
 	}
 	x, err := exif.Decode(file)
 	if err != nil {
-		log.Println(err)
-		return
+		return err
 	}
 	i.Exif = ""
 	err = x.Walk(i)
 	if err != nil {
+		//todo: add error
 		log.Println(err)
 	}
 	i.Taken, err = x.DateTime()
 	if err != nil {
+		//todo: add error
 		log.Println(err)
 	}
 	i.Lat, i.Long, err = x.LatLong()
 	if err != nil {
+		//todo: add error
 		log.Println(err)
 	}
+	return nil
 }
 
 func (i *Index) populateMD5(file *os.File) error {
