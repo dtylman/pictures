@@ -32,6 +32,9 @@ func routes() *httprouter.Router {
 	r.POST("/search", hr.Handler(alice.New().ThenFunc(controller.Search)))
 	r.GET("/search", hr.Handler(alice.New().ThenFunc(controller.Search)))
 	r.GET("/page", hr.Handler(alice.New().ThenFunc(controller.Page)))
+	r.GET("/nextpage", hr.Handler(alice.New().ThenFunc(controller.NextPage)))
+	r.GET("/prevpage", hr.Handler(alice.New().ThenFunc(controller.PrevPage)))
+
 	r.GET("/index", hr.Handler(alice.New().ThenFunc(controller.Index)))
 	r.POST("/index", hr.Handler(alice.New().ThenFunc(controller.Index)))
 	r.GET("/backup", hr.Handler(alice.New().ThenFunc(controller.Backup)))

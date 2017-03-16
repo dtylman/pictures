@@ -11,7 +11,7 @@ func ActiveImage(w http.ResponseWriter, r *http.Request) {
 }
 
 func PrevImage(w http.ResponseWriter, r *http.Request) {
-	mySearch.PrevHit()
+	mySearch.PrevImage()
 	v := view.New(r)
 	v.Vars["image"] = mySearch.ActiveImage
 	v.Name = "image/view"
@@ -19,7 +19,7 @@ func PrevImage(w http.ResponseWriter, r *http.Request) {
 }
 
 func NextImage(w http.ResponseWriter, r *http.Request) {
-	mySearch.NextHit()
+	mySearch.NextImage()
 	v := view.New(r)
 	v.Vars["image"] = mySearch.ActiveImage
 	v.Name = "image/view"
@@ -42,7 +42,7 @@ func ImageView(w http.ResponseWriter, r *http.Request) {
 		Error500(w, r, err)
 		return
 	}
-	mySearch.SetActiveHit(hit)
+	mySearch.SetActiveImage(hit)
 	v := view.New(r)
 	v.Vars["image"] = mySearch.ActiveImage
 	v.Name = "image/view"

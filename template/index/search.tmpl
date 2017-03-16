@@ -33,19 +33,17 @@
         {{end}}
     </div>
     <hr/>
-    <form method="post">
-        <ul class="pagination">
-            {{range $from := .pages}}
-            {{if .Active}}
-            <li class="active"><a href="page?from={{.From}}">{{.Caption}}</a></li>
-            {{else}}
-            <li><a href="page?from={{.From}}">{{.Caption}}</a></li>
-            {{end}}
-            {{end}}
-        </ul>
-
-
-    </form>
+    <ul class="pagination">
+        <li><a href="prevpage"><<</a></li>
+        {{range $from := .pages}}
+        {{if .Active}}
+        <li class="active"><a href="page?from={{.From}}">{{.Caption}}</a></li>
+        {{else}}
+        <li><a href="page?from={{.From}}">{{.Caption}}</a></li>
+        {{end}}
+        {{end}}
+        <li><a href="nextpage">>></a></li>
+    </ul>
     {{template "footer" .}}
 </div>
 {{end}}

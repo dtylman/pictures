@@ -28,6 +28,22 @@ func Search(w http.ResponseWriter, r *http.Request) {
 	SearchResults(w, r)
 }
 
+func NextPage(w http.ResponseWriter, r *http.Request) {
+	err := mySearch.NextPage()
+	if err != nil {
+		flashError(r, err)
+	}
+	SearchResults(w, r)
+
+}
+func PrevPage(w http.ResponseWriter, r *http.Request) {
+	err := mySearch.PrevPage()
+	if err != nil {
+		flashError(r, err)
+	}
+	SearchResults(w, r)
+}
+
 func Page(w http.ResponseWriter, r *http.Request) {
 	fromString := r.URL.Query().Get("from")
 	var err error

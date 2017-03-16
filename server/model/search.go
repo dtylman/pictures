@@ -68,7 +68,7 @@ func (s *Search) StartFrom(start int) error {
 	return s.doQuery()
 }
 
-func (s *Search) SetActiveHit(hit int) {
+func (s *Search) SetActiveImage(hit int) {
 	s.ActiveImage.ID = s.Result.Hits[hit].ID
 	s.ActiveImage.Hit = hit
 	s.ActiveImage.Details = s.Result.Hits[hit].Fields
@@ -77,12 +77,57 @@ func (s *Search) SetActiveHit(hit int) {
 	s.ActiveImage.Name = filepath.Base(s.ActiveImage.Path)
 }
 
-func (s *Search) NextHit() {
-	s.SetActiveHit(s.ActiveImage.Hit + 1)
+func (s *Search) NextImage() error {
+	hit := s.ActiveImage.Hit + 1
+	if hit >= int(s.Result.Total) {
+		//nowhere to go
+		return nil
+	}
+	if hit >= conf.Options.SearchPageSize {
+		return s.NextPage()
+	}
+	s.SetActiveImage(hit)
+	return nil
 }
 
-func (s *Search) PrevHit() {
-	s.SetActiveHit(s.ActiveImage.Hit - 1)
+func (s *Search) PrevImage() error {
+	hit := s.ActiveImage.Hit - 1
+	log.Println(hit)
+	if hit < 0 {
+		return s.PrevPage()
+	}
+	s.SetActiveImage(hit)
+	return nil
+}
+
+func (s *Search) NextPage() error {
+	from := s.start + conf.Options.SearchPageSize
+	if from > int(s.Result.Total) {
+		//no where to go
+		return nil
+	}
+	s.start = from
+	err := s.doQuery()
+	if err != nil {
+		return err
+	}
+	s.SetActiveImage(0)
+	return nil
+}
+
+func (s *Search) PrevPage() error {
+	from := s.start - conf.Options.SearchPageSize
+	if from < 0 {
+		//no where to go
+		return nil
+	}
+	s.start = from
+	err := s.doQuery()
+	if err != nil {
+		return err
+	}
+	s.SetActiveImage(s.Result.Hits.Len() - 1)
+	return nil
 }
 
 func (s *Search) doQuery() error {
