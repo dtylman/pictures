@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/dtylman/pictures/server/controller"
-	hr "github.com/dtylman/pictures/server/route/middleware/httprouterwrapper"
+	hr "github.com/dtylman/pictures/server/route/middleware/httprouterhandler"
 	"github.com/gorilla/context"
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"

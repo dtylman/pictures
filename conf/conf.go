@@ -16,13 +16,22 @@ const (
 	defaultBoltFileName = "bolt.db"
 )
 
+//Options ...
 var Options struct {
-	MapQuestAPIKey string   `json:"map_quest_api_key"`
-	SourceFolders  []string `json:"source_folders"`
-	BackupFolder   string   `json:"backup_folder"`
-	SearchPageSize int      `json:"search_page_size"`
-	ThumbX         uint     `json:"thumb_x"`
-	ThumbY         uint     `json:"thumb_y"`
+	//MapQuestAPIKey API key for map quest service
+	MapQuestAPIKey string `json:"map_quest_api_key"`
+	//SourceFolders folders with pictures to scan
+	SourceFolders []string `json:"source_folders"`
+	//BackupFolder folder to backup
+	BackupFolder string `json:"backup_folder"`
+	//SearchPageSize the search page query size
+	SearchPageSize int `json:"search_page_size"`
+	//ThumbX thumbnail width
+	ThumbX uint `json:"thumb_x"`
+	//ThumbY thumbnail height
+	ThumbY uint `json:"thumb_y"`
+	//IdleSeconds wait time before application closes.
+	IdleSeconds uint `json:"idle_seconds"`
 }
 
 func init() {
@@ -30,6 +39,7 @@ func init() {
 	Options.SearchPageSize = 12
 	Options.ThumbX = 300
 	Options.ThumbY = 200
+	Options.IdleSeconds = 300
 	thumbPath, err := ThumbPath()
 	if err != nil {
 		log.Fatal(err)
@@ -60,11 +70,11 @@ func Load() error {
 }
 
 func getPathForFile(fileName string) (string, error) {
-	user, err := user.Current()
+	cuser, err := user.Current()
 	if err != nil {
 		return "", err
 	}
-	appFolder := filepath.Join(user.HomeDir, ".pictures")
+	appFolder := filepath.Join(cuser.HomeDir, ".pictures")
 	err = os.MkdirAll(appFolder, 0755)
 	if err != nil {
 		return "", err
