@@ -7,6 +7,7 @@ import (
 	"github.com/dtylman/pictures/indexer/picture"
 	"github.com/dtylman/pictures/indexer/remover"
 	"github.com/dtylman/pictures/indexer/thumbs"
+	"github.com/dtylman/pictures/progressbar"
 	"github.com/jasonwinn/geocoder"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/mknote"
@@ -21,6 +22,7 @@ func init() {
 	exif.RegisterParsers(mknote.All...)
 }
 
+//Start starts the indexer
 func Start(options Options) error {
 	log.Println("Starting index with options: ", options)
 	err := indexer.SetStarted(options)
@@ -37,16 +39,19 @@ func Start(options Options) error {
 	return nil
 }
 
+//Stop stops the indexer
 func Stop() {
-	indexer.SetDone()
+	indexer.setDone()
 }
 
+//IsRunning returns true if indexer is running
 func IsRunning() bool {
 	return indexer.IsRunning()
 }
 
-func GetProgress() string {
-	return indexer.ProgressString()
+//GetProgressStatus returns status for a progress bar
+func GetProgressStatus() *progressbar.Status {
+	return indexer.ProgressStatus()
 }
 
 func indexOne(path string, info os.FileInfo, e1 error) error {
@@ -57,7 +62,9 @@ func indexOne(path string, info os.FileInfo, e1 error) error {
 	if !indexer.IsRunning() {
 		return errors.New("Indexer had stopped")
 	}
-	if !info.IsDir() {
+	if info.IsDir() {
+		indexer.setCurrentFolder(path)
+	} else {
 		if info.Size() > 0 {
 			i, err := picture.NewIndex(path, info)
 			if err != nil {
@@ -66,23 +73,20 @@ func indexOne(path string, info os.FileInfo, e1 error) error {
 				saveIndex(i)
 			}
 		}
-		indexer.progress.incFile(info.Size())
+		indexer.incFile(info.Size())
 	}
 	return nil
 }
 
 func index(rootPath string) error {
-	err := indexer.progress.init(rootPath)
-	if err != nil {
-		log.Println(err)
-	}
 	return filepath.Walk(rootPath, indexOne)
 }
 
 func indexPictures() {
 	log.Println("Indexing ")
-	defer indexer.SetDone()
+	defer indexer.setDone()
 	for _, folder := range conf.Options.SourceFolders {
+		indexer.incSourceFolder()
 		err := index(folder)
 		if err != nil {
 			indexer.AddError(folder, err)

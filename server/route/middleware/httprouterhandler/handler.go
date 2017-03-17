@@ -12,9 +12,9 @@ var LastAccess accessTime
 
 // Handler accepts a handler to make it compatible with http.HandlerFunc
 func Handler(h http.Handler) httprouter.Handle {
-	//update the last access time
-	LastAccess.update()
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		//update the last access time
+		LastAccess.update()
 		context.Set(r, "params", p)
 		h.ServeHTTP(w, r)
 	}

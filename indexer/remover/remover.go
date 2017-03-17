@@ -9,12 +9,12 @@ import (
 )
 
 type scanner struct {
-	items []string
+	itemsToRemove []string
 }
 
 func (s *scanner) Remove() error {
 	db.WalkImages(s.scanPicture)
-	return db.Remove(s.items)
+	return db.Remove(s.itemsToRemove)
 }
 
 func (s *scanner) scanPicture(key string, image *picture.Index, err error) {
@@ -29,13 +29,13 @@ func (s *scanner) scanPicture(key string, image *picture.Index, err error) {
 	_, err = os.Stat(image.Path)
 	if err != nil {
 		log.Println(fmt.Sprintf("image: %v, error: %v", image.Path, err))
-		s.items = append(s.items, image.MD5)
+		s.itemsToRemove = append(s.itemsToRemove, image.MD5)
 	}
 }
 
 func newScanner() *scanner {
 	s := new(scanner)
-	s.items = make([]string, 0)
+	s.itemsToRemove = make([]string, 0)
 	return s
 }
 

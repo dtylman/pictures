@@ -1,24 +1,47 @@
 {{define "title"}}Pictures{{end}}
-{{define "head"}}{{end}}
+{{define "head"}}
+{{if .index_running}}
+<script language="javascript">
+    function updateProgress(text, percentage) {
+        if (percentage > 100) percentage = 100;
+        $('#progressBar').css('width', percentage + '%');
+        $('#progressBar').html(text + ' (' + percentage + '%)');
+    }
+
+    (function worker() {
+        $.ajax({
+            url: 'index/status',
+            success: function(data) {
+                if (data.done)
+                {
+                    window.location = "index";
+                }
+                updateProgress(data.text, data.percentage);
+            },
+            complete: function() {
+                setTimeout(worker, 1000);
+            }
+        });
+    })();
+
+</script>
+{{end}}
+{{end}}
 {{define "content"}}
 <div class="container">
     <div class="page-header">
         <h1>Index</h1>
     </div>
-    <form method="post">
+
+    <form method="post" id="form">
         {{if .index_running}}
         <h4>Now Indexing...</h4>
         <hr/>
-        <div class="form-group">
-            <label>Progress</label>
-            <div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 100%">
-                {{.index_progress}}
-            </div>
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" id="progressBar" role="progressbar" style="width:1%"></div>
         </div>
         <hr/>
-        <button type="submit" class="btn btn-primary" name="action" value="refresh">Refresh</button>
         <button type="submit" class="btn btn-primary" name="action" value="stop">Stop</button>
-
         {{else}}
         <h4>Options</h4>
         <hr/>

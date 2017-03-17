@@ -19,14 +19,6 @@ func About(w http.ResponseWriter, r *http.Request) {
 	v.Render(w)
 }
 
-// Backup displays the backup page
-func Backup(w http.ResponseWriter, r *http.Request) {
-	// Display the view
-	v := view.New(r)
-	v.Name = "backup/backup"
-	v.Render(w)
-}
-
 func flash(r *http.Request, messageType string, message string, args ...interface{}) {
 	sess := session.Instance(r)
 	sess.AddFlash(view.Flash{fmt.Sprintf(message, args...), messageType})

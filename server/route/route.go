@@ -34,12 +34,14 @@ func routes() *httprouter.Router {
 	r.GET("/page", hr.Handler(alice.New().ThenFunc(controller.Page)))
 	r.GET("/nextpage", hr.Handler(alice.New().ThenFunc(controller.NextPage)))
 	r.GET("/prevpage", hr.Handler(alice.New().ThenFunc(controller.PrevPage)))
-
 	r.GET("/index", hr.Handler(alice.New().ThenFunc(controller.Index)))
+	r.GET("/index/status", hr.Handler(alice.New().ThenFunc(controller.IndexStatus)))
 	r.POST("/index", hr.Handler(alice.New().ThenFunc(controller.Index)))
 	r.GET("/backup", hr.Handler(alice.New().ThenFunc(controller.Backup)))
 	r.GET("/about", hr.Handler(alice.New().ThenFunc(controller.About)))
 	r.GET("/settings", hr.Handler(alice.New().ThenFunc(controller.Settings)))
+	r.GET("/backup/status", hr.Handler(alice.New().ThenFunc(controller.BackupStatus)))
+
 	r.POST("/settings", hr.Handler(alice.New().ThenFunc(controller.Settings)))
 	r.POST("/settings/removesourcefolder/:folder", hr.Handler(alice.New().ThenFunc(controller.RemoveSourceFolder)))
 	return r

@@ -1,12 +1,37 @@
 {{define "title"}}Pictures{{end}}
-{{define "head"}}{{end}}
+{{define "head"}}
+<script language="javascript">
+    function updateProgress(text, percentage) {
+        if (percentage > 100) percentage = 100;
+        $('#progressBar').css('width', percentage + '%');
+        $('#progressBar').html(text + ' (' + percentage + '%)');
+    }
+
+    (function worker() {
+        $.ajax({
+            url: 'index/status',
+            success: function(data) {
+                console.log(data);
+                $('#progressBar').html(data.text, data.percentage);
+            },
+            complete: function() {
+                setTimeout(worker, 1000);
+            }
+        });
+    })();
+
+</script>
+{{end}}
 {{define "content"}}
 <div class="container">
     <div class="page-header">
         <h1>Backup</h1>
     </div>
-
+    <div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 100%">
+        <div id="progressBar" class="bar" style="width:1%;background-color:green"></div>
+    </div>
     {{template "footer" .}}
 </div>
 {{end}}
-{{define "foot"}}{{end}}
+{{define "foot"}}
+{{end}}

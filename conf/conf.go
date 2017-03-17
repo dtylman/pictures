@@ -39,7 +39,7 @@ func init() {
 	Options.SearchPageSize = 12
 	Options.ThumbX = 300
 	Options.ThumbY = 200
-	Options.IdleSeconds = 300
+	Options.IdleSeconds = 5
 	thumbPath, err := ThumbPath()
 	if err != nil {
 		log.Fatal(err)
