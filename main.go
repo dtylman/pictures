@@ -2,6 +2,12 @@ package main
 
 import (
 	"flag"
+	"log"
+	"net"
+	"os"
+	"os/signal"
+	"time"
+
 	"github.com/dtylman/pictures/backuper"
 	"github.com/dtylman/pictures/conf"
 	"github.com/dtylman/pictures/indexer"
@@ -11,11 +17,6 @@ import (
 	"github.com/dtylman/pictures/server/route"
 	"github.com/dtylman/pictures/server/route/middleware/httprouterhandler"
 	"github.com/skratchdot/open-golang/open"
-	"log"
-	"net"
-	"os"
-	"os/signal"
-	"time"
 )
 
 const nobrowser = "none"
