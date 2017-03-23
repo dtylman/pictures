@@ -10,7 +10,7 @@ type Event struct {
 	Inputs []EventElement `json:"inputs"`
 }
 
-type EventHandler func(sender *EventElement)
+type EventHandler func(sender *Element, event *EventElement)
 
 const (
 	OnClick = "onclick"

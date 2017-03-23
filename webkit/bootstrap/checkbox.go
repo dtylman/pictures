@@ -27,6 +27,7 @@ func NewCheckBox(caption string, checked bool) *Checkbox {
 	lbl.AddElement(cb.chkbox)
 	cb.txt = webkit.NewText(caption)
 	lbl.AddElement(cb.txt)
+	lbl.SetAttribute("for", cb.chkbox.GetID())
 	cb.Element.AddElement(lbl)
 	return cb
 }

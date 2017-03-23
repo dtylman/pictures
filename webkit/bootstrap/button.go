@@ -12,3 +12,10 @@ func NewButton(buttontype string, caption string) *webkit.Element {
 	btn.SetText(caption)
 	return btn
 }
+
+func NewLinkButton(caption string) *webkit.Element {
+	linkBtn := webkit.NewElement("a")
+	linkBtn.SetAttribute("href", "#")
+	linkBtn.AddElement(webkit.NewText(caption))
+	return linkBtn
+}

@@ -6,6 +6,7 @@ import (
 	"golang.org/x/net/html"
 	"os"
 	"sync"
+	"time"
 )
 
 var renderMutex sync.Mutex
@@ -37,4 +38,9 @@ func Run(body *Element) error {
 		body.ProcessEvent(&event)
 	}
 	return nil
+}
+
+func Error(err error) {
+	fmt.Println("Error: ", err.Error())
+	time.Sleep(3 * time.Second)
 }

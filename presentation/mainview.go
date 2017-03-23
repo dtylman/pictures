@@ -33,7 +33,7 @@ func init() {
 	// footer
 }
 
-func btnSearchClick(sender *webkit.EventElement) {
+func btnSearchClick(*webkit.Element, *webkit.EventElement) {
 	Content.RemoveElements()
 	Content.AddElement(webkit.NewText("Search"))
 	txt := webkit.NewText("haha")
@@ -46,8 +46,12 @@ func btnSearchClick(sender *webkit.EventElement) {
 	}()
 }
 
-func btnIndexClick(sender *webkit.EventElement) {
+func btnIndexClick(*webkit.Element, *webkit.EventElement) {
+	showView(indexview.View)
+}
+
+func showView(view *webkit.Element) {
 	Content.RemoveElements()
-	Content.AddElement(indexview.View)
+	Content.AddElement(view)
 	MainView.Render()
 }

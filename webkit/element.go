@@ -97,6 +97,14 @@ func (e *Element) setID(id string) {
 	e.SetAttribute("id", id)
 }
 
+func (e *Element) Hide() {
+	e.Hidden = true
+}
+
+func (e *Element) Show() {
+	e.Hidden = false
+}
+
 func (e *Element) Find(id string) *Element {
 	if e.GetID() == id {
 		return e
@@ -160,7 +168,7 @@ func (e *Element) fireEvent(senderID string, sender *EventElement) {
 	}
 	if e.GetID() == senderID {
 		if e.onEvent != nil {
-			e.onEvent(sender)
+			e.onEvent(e, sender)
 		}
 	}
 }
