@@ -1,4 +1,3 @@
-const spawn = require('child_process').spawn;
 
 var child;
 var fails = 0;
@@ -9,9 +8,17 @@ function body_message(msg){
 
 function start_process() {
     body_message("Loading...");
-    child = spawn('/home/danny/src/go/src/github.com/dtylman/pictures/cmd/pc/pc');
-    child.stdout.on('data', (data) => {
-        console.log(data);
+
+    const spawn = require('child_process').spawn;
+    child = spawn('/home/danny/src/go/src/github.com/dtylman/pictures/cmd/pc/pc',{maxBuffer:1024*500});    
+    
+    const readline = require('readline');
+    const rl = readline.createInterface({
+        input: child.stdout
+    })
+
+    rl.on('line', (data) => {        
+        console.log(`Received: ${data}`);
         document.body.innerHTML = data;
     });
 

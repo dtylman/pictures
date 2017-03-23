@@ -3,7 +3,7 @@
   "main": "index.html",
   "window": {
     "position": "center",
-    "width": 800,
-    "height": 600
+    "width": 1500,
+    "height": 1000
   }
 }

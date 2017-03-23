@@ -4,30 +4,28 @@ import (
 	"github.com/dtylman/pictures/webkit"
 )
 
+func NewElement(tag, class string) *webkit.Element {
+	elem := webkit.NewElement(tag)
+	elem.SetAttribute("class", class)
+	return elem
+}
+
 func NewContainer(fluid bool) *webkit.Element {
 	if fluid {
-		return webkit.NewElement("div", "container-fluid")
+		return NewElement("div", "container-fluid")
 	}
-	return webkit.NewElement("div", "container")
-}
-
-func NewForm() *webkit.Element {
-	return webkit.NewElement("form", "")
-}
-
-func NewFormGroup() *webkit.Element {
-	return webkit.NewElement("div", "form-group")
+	return NewElement("div", "container")
 }
 
 func NewLabel(forwhat string, text string) *webkit.Element {
-	label := webkit.NewElement("label", "")
+	label := webkit.NewElement("label")
 	label.SetAttribute("for", forwhat)
-	label.Data = text
+	label.AddElement(webkit.NewText(text))
 	return label
 }
 
 func NewInput(placeholder string) *webkit.Element {
-	input := webkit.NewElement("input", "form-control")
+	input := NewElement("input", "form-control")
 	input.SetAttribute("type", "text")
 	if placeholder != "" {
 		input.SetAttribute("placeholder", placeholder)
@@ -35,8 +33,9 @@ func NewInput(placeholder string) *webkit.Element {
 	return input
 }
 
-func NewButton(buttontype string, caption string) *webkit.Element {
-	btn := webkit.NewElement("button", "btn "+buttontype)
-	btn.SetText("caption")
-	return btn
+func NewLinkButton(caption string) *webkit.Element {
+	linkBtn := webkit.NewElement("a")
+	linkBtn.SetAttribute("href", "#")
+	linkBtn.AddElement(webkit.NewText(caption))
+	return linkBtn
 }

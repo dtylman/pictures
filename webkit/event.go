@@ -11,3 +11,12 @@ type Event struct {
 }
 
 type EventHandler func(sender *EventElement)
+
+const (
+	OnClick = "onclick"
+)
+
+func (e *EventElement) GetID() string {
+	id, _ := e.Attributes["id"]
+	return id
+}
