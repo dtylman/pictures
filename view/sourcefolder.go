@@ -1,4 +1,4 @@
-package indexview
+package view
 
 import (
 	"github.com/dtylman/pictures/webkit"
@@ -12,20 +12,15 @@ import (
 //</span>
 //</div><!-- /input-group -->
 
-type SourceFolder struct {
-	*webkit.Element
-	ButtonRemove *webkit.Element
-}
-
-func NewSourceFolder(path string) *SourceFolder {
-	sf := new(SourceFolder)
-	sf.Element = bootstrap.NewElement("div", "input-group")
+func NewSourceFolder(path string, onRemove webkit.EventHandler) *webkit.Element {
+	sf := bootstrap.NewElement("div", "input-group")
 	input := bootstrap.NewElement("input", "form-control")
 	input.SetAttribute("readonly", "true")
 	input.SetAttribute("value", path)
-	sf.ButtonRemove = bootstrap.NewButton(bootstrap.ButtonDefault, "Remove")
+	btnRemove := bootstrap.NewButton(bootstrap.ButtonDefault, "Remove")
+	btnRemove.OnEvent(webkit.OnClick, onRemove)
 	span := bootstrap.NewElement("span", "input-group-btn")
-	span.AddElement(sf.ButtonRemove)
+	span.AddElement(btnRemove)
 	sf.AddElement(input)
 	sf.AddElement(span)
 	return sf

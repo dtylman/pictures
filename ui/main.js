@@ -7,7 +7,7 @@ function body_message(msg){
 }
 
 function start_process() {
-    body_message("Loading...");
+     body_message("Loading...");
 
     const spawn = require('child_process').spawn;
     child = spawn('/home/danny/src/go/src/github.com/dtylman/pictures/cmd/pc/pc',{maxBuffer:1024*500});    
@@ -77,5 +77,13 @@ function fire_event(sender){
     console.log(JSON.stringify(msg));
 }
 
-start_process();
+function avoid_reload(){
+    if (sessionStorage.getItem("loaded")=="true"){
+        alert("go-webkit will fail when page reload. avoid using <form> or submit.");
+        close();
+    }
+    sessionStorage.setItem("loaded","true");
+}
 
+avoid_reload();
+start_process();
