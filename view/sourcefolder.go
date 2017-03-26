@@ -19,6 +19,7 @@ func NewSourceFolder(path string, onRemove webkit.EventHandler) *webkit.Element 
 	input.SetAttribute("value", path)
 	btnRemove := bootstrap.NewButton(bootstrap.ButtonDefault, "Remove")
 	btnRemove.OnEvent(webkit.OnClick, onRemove)
+	btnRemove.Object = path
 	span := bootstrap.NewElement("span", "input-group-btn")
 	span.AddElement(btnRemove)
 	sf.AddElement(input)

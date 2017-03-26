@@ -13,7 +13,8 @@ type Event struct {
 type EventHandler func(sender *Element, event *EventElement)
 
 const (
-	OnClick = "onclick"
+	OnClick  = "onclick"
+	OnChange = "onchange"
 )
 
 func (e *EventElement) GetID() string {

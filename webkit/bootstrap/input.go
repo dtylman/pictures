@@ -10,6 +10,7 @@ import "github.com/dtylman/pictures/webkit"
 
 const (
 	InputTypeText = "text"
+	InputTypeFile = "file"
 )
 
 type Input struct {
@@ -47,4 +48,8 @@ func (i *Input) SetHelpText(help string) {
 
 func (i *Input) SetValue(value string) {
 	i.input.SetAttribute("value", value)
+}
+
+func (i *Input) GetValue() string {
+	return i.input.GetValue()
 }

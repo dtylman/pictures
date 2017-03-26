@@ -8,6 +8,7 @@ import (
 
 type mainView struct {
 	Root    *webkit.Element
+	alert   *webkit.Element
 	content *webkit.Element
 }
 
@@ -30,6 +31,9 @@ func (mv *mainView) init() {
 	navBar.AddButton(bootstrap.ButtonDefault, "Settings")
 	navBar.AddButton(bootstrap.ButtonDefault, "About")
 	mv.Root.AddElement(navBar.Element)
+	// alert
+	mv.alert = webkit.NewElement("div")
+	mv.Root.AddElement(mv.alert)
 
 	//content
 	mv.content = bootstrap.NewContainer(true)
@@ -58,4 +62,12 @@ func (mv *mainView) btnIndexClick(*webkit.Element, *webkit.EventElement) {
 func (mv *mainView) setActiveView(view *webkit.Element) {
 	mv.content.RemoveElements()
 	mv.content.AddElement(view)
+}
+
+func (mv *mainView) addAlert(title string, caption string, alertType string) {
+	mv.alert.AddElement(bootstrap.NewAlert(title, caption, alertType, true))
+}
+
+func (mv *mainView) addAlertError(err error) {
+	mv.addAlert("Error", err.Error(), bootstrap.AlertDanger)
 }

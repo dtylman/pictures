@@ -106,6 +106,15 @@ func RemoveSourceFolder(removeFolder string) {
 	Options.SourceFolders = list
 }
 
+func AddSourceFolder(path string) {
+	for _, folder := range Options.SourceFolders {
+		if folder == path {
+			return
+		}
+	}
+	Options.SourceFolders = append(Options.SourceFolders, path)
+}
+
 //BlevePath returns bleve path
 func BlevePath() (string, error) {
 	return getPathForFile(defaultBleveFolder)

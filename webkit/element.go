@@ -18,10 +18,6 @@ type Element struct {
 	Hidden     bool
 }
 
-func NewText(text string) *Element {
-	return &Element{nodeType: html.TextNode, data: text}
-}
-
 func NewElement(tag string) *Element {
 	elem := &Element{
 		data:       tag,
@@ -51,6 +47,16 @@ func (e *Element) AddElement(elem *Element) *Element {
 
 func (e *Element) RemoveElements() {
 	e.Kids = make([]*Element, 0)
+}
+
+func (e *Element) RemoveElement(elem *Element) {
+	before := e.Kids
+	e.RemoveElements()
+	for _, kid := range before {
+		if kid.GetID() != elem.GetID() {
+			e.AddElement(kid)
+		}
+	}
 }
 
 func (e *Element) SetText(text string) {
@@ -163,8 +169,9 @@ func (e *Element) fireEvent(senderID string, sender *EventElement) {
 	if senderID == "" {
 		return
 	}
-	for i := range e.Kids {
-		e.Kids[i].fireEvent(senderID, sender)
+	kids := e.Kids //events may change the kids container
+	for i := range kids {
+		kids[i].fireEvent(senderID, sender)
 	}
 	if e.GetID() == senderID {
 		if e.onEvent != nil {
