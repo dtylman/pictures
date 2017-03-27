@@ -1,4 +1,4 @@
-package view
+package components
 
 import (
 	"github.com/dtylman/pictures/conf"
@@ -6,8 +6,8 @@ import (
 	"github.com/dtylman/pictures/webkit/bootstrap"
 )
 
-type indexView struct {
-	Root          *webkit.Element
+type index struct {
+	*webkit.Element
 	progressBar   *bootstrap.ProgressBar
 	btnStop       *webkit.Element
 	btnStart      *webkit.Element
@@ -18,14 +18,9 @@ type indexView struct {
 	SourceFolders *webkit.Element
 }
 
-var IndexView indexView
-
-func init() {
-	IndexView.init()
-}
-
-func (iv *indexView) init() {
-	iv.Root = bootstrap.NewElement("div", "form-horizontal")
+func newIndex() *index {
+	iv := new(index)
+	iv.Element = bootstrap.NewElement("div", "form-horizontal")
 
 	iv.chkLocation = bootstrap.NewCheckBox("Include Locations", false)
 	iv.chkReIndex = bootstrap.NewCheckBox("Reindex Existing Items", false)
@@ -42,35 +37,43 @@ func (iv *indexView) init() {
 	iv.btnStop = bootstrap.NewButton(bootstrap.ButtonPrimary, "Stop")
 	iv.btnAddFolder = bootstrap.NewFileButton(bootstrap.ButtonDefault, "Add folder", true)
 	iv.btnAddFolder.OnChange(iv.btnAddFolderChanged)
-	iv.Root.AddElement(iv.chkLocation.Element)
-	iv.Root.AddElement(iv.chkReIndex.Element)
-	iv.Root.AddElement(iv.inputMapQuest.Element)
+	iv.AddElement(iv.chkLocation.Element)
+	iv.AddElement(iv.chkReIndex.Element)
+	iv.AddElement(iv.inputMapQuest.Element)
 
-	iv.Root.AddElement(iv.SourceFolders)
-	iv.Root.AddElement(iv.btnAddFolder.Element)
+	iv.AddElement(iv.SourceFolders)
+	iv.AddElement(iv.btnAddFolder.Element)
 
-	iv.Root.AddElement(iv.btnStart)
-	iv.Root.AddElement(iv.btnStop)
+	iv.AddElement(iv.btnStart)
+	iv.AddElement(iv.btnStop)
 
-	iv.Root.AddElement(iv.progressBar.Element)
+	iv.AddElement(iv.progressBar.Element)
 
+	//set initial state
+	//if indexer.isrunning,
+	//indexer.setProgressHandler(me)
+	//indexer.start()
+	//indexer.stop()....
+	iv.onIndexerStopped()
+	iv.onConfigChanged()
+	return iv
 }
 
 //OnIndexerStopped happens then indexer had started
-func (iv *indexView) onIndexerStopped() {
+func (iv *index) onIndexerStopped() {
 	iv.btnStop.Hide()
 	iv.btnStart.Show()
 	iv.progressBar.Hide()
 }
 
 //OnIndexerStarted happens when indexer had started
-func (iv *indexView) onIndexerStarted() {
+func (iv *index) onIndexerStarted() {
 	iv.btnStop.Show()
 	iv.btnStart.Hide()
 	iv.progressBar.Show()
 }
 
-func (iv *indexView) onConfigChanged() {
+func (iv *index) onConfigChanged() {
 	iv.inputMapQuest.SetValue(conf.Options.MapQuestAPIKey)
 	iv.SourceFolders.RemoveElements()
 	for _, path := range conf.Options.SourceFolders {
@@ -78,25 +81,31 @@ func (iv *indexView) onConfigChanged() {
 	}
 }
 
-func (iv *indexView) btnSourceFolderDelete(sender *webkit.Element, event *webkit.EventElement) {
+func (iv *index) btnSourceFolderDelete(sender *webkit.Element, event *webkit.EventElement) {
 	path := sender.Object.(string)
 	conf.RemoveSourceFolder(path)
-	err := conf.Save()
-	if err != nil {
-		MainView.addAlertError(err)
-		return
-	}
-	OnConfigChanged()
+	iv.saveConfig(false)
 }
 
-func (iv *indexView) btnAddFolderChanged(sender *webkit.Element, event *webkit.EventElement) {
+func (iv *index) btnAddFolderChanged(sender *webkit.Element, event *webkit.EventElement) {
 	path := iv.btnAddFolder.GetValue()
 	conf.AddSourceFolder(path)
-	OnConfigChanged()
+	iv.saveConfig(false)
 }
 
-func (iv *indexView) inputMapChanged(sender *webkit.Element, event *webkit.EventElement) {
-	///conf.Options.MapQuestAPIKey = iv.inputMapQuest.GetValue()
-	MainView.addAlert("News:", "Want to save this: "+iv.inputMapQuest.GetValue(), bootstrap.AlertInfo)
+func (iv *index) inputMapChanged(sender *webkit.Element, event *webkit.EventElement) {
+	conf.Options.MapQuestAPIKey = iv.inputMapQuest.GetValue()
+	iv.saveConfig(true)
+}
 
+func (iv *index) saveConfig(showAlert bool) {
+	if showAlert {
+		//		Root.addAlert("", "Configuration Saved.", bootstrap.AlertInfo)
+	}
+	err := conf.Save()
+	if err != nil {
+		//		Root.addAlertError(err)
+		return
+	}
+	iv.onConfigChanged()
 }

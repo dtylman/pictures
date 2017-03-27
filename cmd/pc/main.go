@@ -22,7 +22,7 @@ func run() error {
 		return err
 	}
 	initViews()
-	err = webkit.Run(view.MainView.Root)
+	err = webkit.Run(view.RootElement())
 	if err != nil {
 		return err
 	}

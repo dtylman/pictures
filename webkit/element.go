@@ -8,22 +8,33 @@ import (
 var order int
 
 type Element struct {
-	Parent     *Element
-	onEvent    EventHandler
-	Kids       []*Element
+	//Parent the parent element
+	Parent *Element
+	//eventHandlers holds event handlers for events
+	eventHandlers map[string]EventHandler
+	//Kids child elements
+	Kids []*Element
+	//Attributes element attributes...
 	Attributes []html.Attribute
-	Object     interface{}
-	nodeType   html.NodeType
-	data       string
-	Hidden     bool
+	//Object arbitrary user object that can be associated with element.
+	Object interface{}
+	//nodeType the element node type
+	nodeType html.NodeType
+	//data html tag or text
+	data string
+	//Hidden if true the element will not be rendered
+	Hidden bool
+	//renderHash after rendered get a hash to identify if should be rendered again.
+	renderHash []byte
 }
 
 func NewElement(tag string) *Element {
 	elem := &Element{
-		data:       tag,
-		Attributes: make([]html.Attribute, 0),
-		nodeType:   html.ElementNode,
-		Kids:       make([]*Element, 0),
+		data:          tag,
+		Attributes:    make([]html.Attribute, 0),
+		nodeType:      html.ElementNode,
+		Kids:          make([]*Element, 0),
+		eventHandlers: make(map[string]EventHandler),
 	}
 	order++
 	elem.setID(fmt.Sprintf("_%s%d", elem.data, order))
@@ -125,8 +136,8 @@ func (e *Element) Find(id string) *Element {
 }
 
 func (e *Element) OnEvent(event string, handler EventHandler) {
-	e.SetAttribute(event, `fire_event(this);`)
-	e.onEvent = handler
+	e.SetAttribute(event, fmt.Sprintf(`fire_event('%s',this);`, event))
+	e.eventHandlers[event] = handler
 }
 
 func (e *Element) toNode() *html.Node {
@@ -152,7 +163,7 @@ func (e *Element) ProcessEvent(event *Event) {
 			e.updateState(elementID, &input)
 		}
 	}
-	e.fireEvent(event.Sender.GetID(), &event.Sender)
+	e.fireEvent(event.Name, event.Sender.GetID(), &event.Sender)
 }
 
 func (e *Element) updateState(elementID string, input *EventElement) {
@@ -165,17 +176,18 @@ func (e *Element) updateState(elementID string, input *EventElement) {
 	}
 }
 
-func (e *Element) fireEvent(senderID string, sender *EventElement) {
+func (e *Element) fireEvent(eventName string, senderID string, sender *EventElement) {
 	if senderID == "" {
 		return
 	}
 	kids := e.Kids //events may change the kids container
 	for i := range kids {
-		kids[i].fireEvent(senderID, sender)
+		kids[i].fireEvent(eventName, senderID, sender)
 	}
 	if e.GetID() == senderID {
-		if e.onEvent != nil {
-			e.onEvent(e, sender)
+		handler, exists := e.eventHandlers[eventName]
+		if exists {
+			handler(e, sender)
 		}
 	}
 }

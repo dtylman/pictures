@@ -6,6 +6,7 @@ type EventElement struct {
 }
 
 type Event struct {
+	Name   string         `json:"name"`
 	Sender EventElement   `json:"sender"`
 	Inputs []EventElement `json:"inputs"`
 }

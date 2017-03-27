@@ -1,4 +1,4 @@
-package view
+package components
 
 import (
 	"github.com/dtylman/pictures/webkit"
@@ -12,6 +12,7 @@ import (
 //</span>
 //</div><!-- /input-group -->
 
+//NewSourceFolder returns a new source folder element
 func NewSourceFolder(path string, onRemove webkit.EventHandler) *webkit.Element {
 	sf := bootstrap.NewElement("div", "input-group")
 	input := bootstrap.NewElement("input", "form-control")
