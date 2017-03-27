@@ -3,7 +3,6 @@ package conf
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -42,11 +41,11 @@ func init() {
 	Options.IdleSeconds = 5
 	thumbPath, err := ThumbPath()
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	err = os.MkdirAll(thumbPath, 0755)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 

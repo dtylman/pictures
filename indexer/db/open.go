@@ -60,3 +60,9 @@ func Open() error {
 	}
 	return openBolt()
 }
+
+//Close closes the db
+func Close() {
+	idx.Close()
+	bdb.Close()
+}

@@ -2,7 +2,6 @@ package bootstrap
 
 import (
 	"github.com/dtylman/pictures/webkit"
-	"strconv"
 )
 
 //<div class="checkbox">
@@ -23,11 +22,18 @@ func NewCheckBox(caption string, checked bool) *Checkbox {
 	lbl := webkit.NewElement("label")
 	cb.chkbox = webkit.NewElement("input")
 	cb.chkbox.SetAttribute("type", "checkbox")
-	cb.chkbox.SetAttribute("checked", strconv.FormatBool(checked))
+	if checked {
+		cb.chkbox.SetAttribute("checked", "")
+	}
 	lbl.AddElement(cb.chkbox)
 	cb.txt = webkit.NewText(caption)
 	lbl.AddElement(cb.txt)
 	lbl.SetAttribute("for", cb.chkbox.GetID())
 	cb.Element.AddElement(lbl)
 	return cb
+}
+
+func (cb *Checkbox) Checked() bool {
+	_, exists := cb.chkbox.GetAttribute("checked")
+	return exists
 }

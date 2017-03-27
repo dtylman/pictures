@@ -1,17 +1,28 @@
-package components
+package view
 
 import (
 	"github.com/dtylman/pictures/webkit"
 	"github.com/dtylman/pictures/webkit/bootstrap"
 )
 
-type main struct {
-	*webkit.Element
-	alert   *webkit.Element
-	content *webkit.Element
+//parentControls is an interface for the main page
+type parentControls interface {
+	addAlert(title string, caption string, alertType string)
+	addAlertError(err error)
+	Render() error
 }
 
-var Root = newMain()
+type main struct {
+	*webkit.Element
+	alerts  *webkit.Element
+	content *webkit.Element
+
+	//views
+	search *search
+	index  *index
+}
+
+var root = newMain()
 
 func newMain() *main {
 	m := new(main)
@@ -28,25 +39,29 @@ func newMain() *main {
 	navBar.AddButton(bootstrap.ButtonDefault, "Settings")
 	navBar.AddButton(bootstrap.ButtonDefault, "About")
 	m.AddElement(navBar.Element)
-	// alert
-	m.alert = webkit.NewElement("div")
-	m.AddElement(m.alert)
+
+	// alerts
+	m.alerts = webkit.NewElement("div")
+	m.AddElement(m.alerts)
 
 	//content
 	m.content = bootstrap.NewContainer(true)
 	m.AddElement(m.content)
 
+	//views
+	m.index = newIndex(m)
+	m.search = newSearch(m)
 	// footer
-
 	return m
 }
 
 func (m *main) btnSearchClick(*webkit.Element, *webkit.EventElement) {
-	m.setActiveView(newSearch().Element)
+	m.setActiveView(m.search.Element)
 }
 
 func (m *main) btnIndexClick(*webkit.Element, *webkit.EventElement) {
-	m.setActiveView(newIndex().Element)
+	m.index.updateState()
+	m.setActiveView(m.index.Element)
 }
 
 func (m *main) setActiveView(view *webkit.Element) {
@@ -56,9 +71,14 @@ func (m *main) setActiveView(view *webkit.Element) {
 }
 
 func (m *main) addAlert(title string, caption string, alertType string) {
-	m.alert.AddElement(bootstrap.NewAlert(title, caption, alertType, true))
+	m.alerts.AddElement(bootstrap.NewAlert(title, caption, alertType, true))
 }
 
 func (m *main) addAlertError(err error) {
 	m.addAlert("Error", err.Error(), bootstrap.AlertDanger)
+}
+
+//RootElement returns the root "body" container
+func RootElement() *webkit.Element {
+	return root.Element
 }

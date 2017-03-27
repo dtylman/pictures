@@ -5,11 +5,14 @@ import (
 	"github.com/dtylman/pictures/indexer/db"
 	"github.com/dtylman/pictures/view"
 	"github.com/dtylman/pictures/webkit"
+	"net/http"
+	_ "net/http/pprof"
 )
 
-func initViews() {
-	view.OnConfigChanged()
-	view.OnIndexerStopped()
+func init() {
+	go func() {
+		http.ListenAndServe("localhost:6060", nil)
+	}()
 }
 
 func run() error {
@@ -21,7 +24,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	initViews()
+	defer db.Close()
 	err = webkit.Run(view.RootElement())
 	if err != nil {
 		return err

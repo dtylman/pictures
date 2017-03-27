@@ -28,6 +28,7 @@ type Element struct {
 	renderHash []byte
 }
 
+//NewElement creates a new HTML element
 func NewElement(tag string) *Element {
 	elem := &Element{
 		data:          tag,
@@ -37,13 +38,14 @@ func NewElement(tag string) *Element {
 		eventHandlers: make(map[string]EventHandler),
 	}
 	order++
-	elem.setID(fmt.Sprintf("_%s%d", elem.data, order))
+	elem.SetID(fmt.Sprintf("_%s%d", elem.data, order))
 	return elem
 }
 
 func (e *Element) SetAttributes(event *EventElement) {
-	for key, value := range event.Attributes {
-		e.SetAttribute(key, value)
+	e.Attributes = make([]html.Attribute, 0)
+	for key, value := range event.Properties {
+		e.Attributes = append(e.Attributes, html.Attribute{Key: key, Val: value})
 	}
 }
 
@@ -75,6 +77,16 @@ func (e *Element) SetText(text string) {
 		e.data = text
 	} else {
 		e.AddElement(NewText(text))
+	}
+}
+
+func (e *Element) RemoveAttribute(key string) {
+	attributes := e.Attributes
+	e.Attributes = make([]html.Attribute, 0)
+	for _, attrib := range attributes {
+		if attrib.Key != key {
+			e.Attributes = append(e.Attributes, attrib)
+		}
 	}
 }
 
@@ -110,8 +122,16 @@ func (e *Element) GetID() string {
 	return val
 }
 
-func (e *Element) setID(id string) {
+func (e *Element) SetID(id string) {
 	e.SetAttribute("id", id)
+}
+
+func (e *Element) Disable() {
+	e.SetAttribute("disabled", "true")
+}
+
+func (e *Element) Enable() {
+	e.RemoveAttribute("disabled")
 }
 
 func (e *Element) Hide() {
@@ -172,7 +192,6 @@ func (e *Element) updateState(elementID string, input *EventElement) {
 	}
 	if e.GetID() == elementID {
 		e.SetAttributes(input)
-		e.SetAttribute("value", input.Value)
 	}
 }
 
@@ -190,17 +209,4 @@ func (e *Element) fireEvent(eventName string, senderID string, sender *EventElem
 			handler(e, sender)
 		}
 	}
-}
-
-func SetAttribute(node *html.Node, key string, val string) {
-	if node.Attr == nil {
-		node.Attr = make([]html.Attribute, 0)
-	}
-	for i := range node.Attr {
-		if node.Attr[i].Key == key {
-			node.Attr[i].Val = val
-			return
-		}
-	}
-	node.Attr = append(node.Attr, html.Attribute{Key: key, Val: val})
 }

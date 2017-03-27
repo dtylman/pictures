@@ -1,4 +1,4 @@
-package components
+package view
 
 import (
 	"github.com/dtylman/pictures/webkit"

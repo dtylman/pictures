@@ -10,7 +10,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/errors"
 	"io"
 
-	"log"
+	"github.com/dtylman/pictures/tasklog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -84,17 +84,17 @@ func (i *Index) populateExif(file *os.File) error {
 	err = x.Walk(i)
 	if err != nil {
 		//todo: add error
-		log.Println(err)
+		tasklog.Error(err)
 	}
 	i.Taken, err = x.DateTime()
 	if err != nil {
 		//todo: add error
-		log.Println(err)
+		tasklog.Error(err)
 	}
 	i.Lat, i.Long, err = x.LatLong()
 	if err != nil {
 		//todo: add error
-		log.Println(err)
+		tasklog.Error(err)
 	}
 	return nil
 }

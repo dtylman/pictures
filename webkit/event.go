@@ -1,8 +1,7 @@
 package webkit
 
 type EventElement struct {
-	Value      string            `json:"value"`
-	Attributes map[string]string `json:"attributes"`
+	Properties map[string]string `json:"properties"`
 }
 
 type Event struct {
@@ -19,6 +18,11 @@ const (
 )
 
 func (e *EventElement) GetID() string {
-	id, _ := e.Attributes["id"]
+	id, _ := e.Properties["id"]
+	return id
+}
+
+func (e *EventElement) GetValue() string {
+	id, _ := e.Properties["value"]
 	return id
 }
