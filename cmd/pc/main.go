@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/dtylman/gowd"
 	"github.com/dtylman/pictures/conf"
 	"github.com/dtylman/pictures/indexer/db"
 	"github.com/dtylman/pictures/view"
-	"github.com/dtylman/pictures/webkit"
 	"net/http"
 	_ "net/http/pprof"
 )
@@ -25,7 +25,7 @@ func run() error {
 		return err
 	}
 	defer db.Close()
-	err = webkit.Run(view.RootElement())
+	err = gowd.Run(view.RootElement())
 	if err != nil {
 		return err
 	}
@@ -35,6 +35,6 @@ func run() error {
 func main() {
 	err := run()
 	if err != nil {
-		webkit.Error(err)
+		gowd.Error(err)
 	}
 }

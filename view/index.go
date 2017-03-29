@@ -1,45 +1,46 @@
 package view
 
 import (
+	"github.com/dtylman/gowd"
+	"github.com/dtylman/gowd/bootstrap"
 	"github.com/dtylman/pictures/conf"
 	"github.com/dtylman/pictures/indexer"
-	"github.com/dtylman/pictures/webkit"
-	"github.com/dtylman/pictures/webkit/bootstrap"
 )
 
 type index struct {
-	*webkit.Element
+	*gowd.Element
 	progressBar    *bootstrap.ProgressBar
-	btnStop        *webkit.Element
-	btnStart       *webkit.Element
+	btnStop        *gowd.Element
+	btnStart       *gowd.Element
 	btnAddFolder   *bootstrap.FileButton
 	chkLocation    *bootstrap.Checkbox
 	chkReIndex     *bootstrap.Checkbox
 	inputMapQuest  *bootstrap.Input
-	SourceFolders  *webkit.Element
+	SourceFolders  *gowd.Element
 	parentControls parentControls
 }
 
 func newIndex(p parentControls) *index {
 	i := &index{parentControls: p}
-	i.Element = bootstrap.NewElement("div", "form-horizontal")
+	i.Element = gowd.NewElement("div")
+
 	i.chkLocation = bootstrap.NewCheckBox("Include Locations", false)
 	i.chkReIndex = bootstrap.NewCheckBox("Reindex Existing Items", false)
 
-	i.SourceFolders = webkit.NewElement("div")
+	i.SourceFolders = gowd.NewElement("div")
 
 	i.inputMapQuest = bootstrap.NewInput(bootstrap.InputTypeText, "MapQuest API Key")
 	i.inputMapQuest.SetHelpText("Required for Geolocation")
 	i.inputMapQuest.SetPlaceHolder("API KEY...")
-	i.inputMapQuest.OnEvent(webkit.OnChange, i.inputMapChanged)
+	i.inputMapQuest.OnEvent(gowd.OnChange, i.inputMapChanged)
 
 	i.progressBar = bootstrap.NewProgressBar()
 
 	i.btnStart = bootstrap.NewButton(bootstrap.ButtonPrimary, "Start")
-	i.btnStart.OnEvent(webkit.OnClick, i.btnStartClicked)
+	i.btnStart.OnEvent(gowd.OnClick, i.btnStartClicked)
 
 	i.btnStop = bootstrap.NewButton(bootstrap.ButtonPrimary, "Stop")
-	i.btnStop.OnEvent(webkit.OnClick, i.btnStopClicked)
+	i.btnStop.OnEvent(gowd.OnClick, i.btnStopClicked)
 
 	i.btnAddFolder = bootstrap.NewFileButton(bootstrap.ButtonDefault, "Add folder", true)
 	i.btnAddFolder.OnChange(i.btnAddFolderChanged)
@@ -86,13 +87,13 @@ func (i *index) updateIndexerProgress(progress indexer.IndexerProgress) {
 	i.parentControls.Render()
 }
 
-func (i *index) btnSourceFolderDelete(sender *webkit.Element, event *webkit.EventElement) {
+func (i *index) btnSourceFolderDelete(sender *gowd.Element, event *gowd.EventElement) {
 	path := sender.Object.(string)
 	conf.RemoveSourceFolder(path)
 	i.saveConfig(false)
 }
 
-func (i *index) btnStartClicked(sender *webkit.Element, event *webkit.EventElement) {
+func (i *index) btnStartClicked(sender *gowd.Element, event *gowd.EventElement) {
 	err := indexer.Start(indexer.Options{
 		IndexLocation:   i.chkLocation.Checked(),
 		ReIndex:         i.chkReIndex.Checked(),
@@ -104,18 +105,18 @@ func (i *index) btnStartClicked(sender *webkit.Element, event *webkit.EventEleme
 	i.updateState()
 }
 
-func (i *index) btnStopClicked(sender *webkit.Element, event *webkit.EventElement) {
+func (i *index) btnStopClicked(sender *gowd.Element, event *gowd.EventElement) {
 	indexer.Stop()
 	i.updateState()
 }
 
-func (i *index) btnAddFolderChanged(sender *webkit.Element, event *webkit.EventElement) {
+func (i *index) btnAddFolderChanged(sender *gowd.Element, event *gowd.EventElement) {
 	path := i.btnAddFolder.GetValue()
 	conf.AddSourceFolder(path)
 	i.saveConfig(false)
 }
 
-func (i *index) inputMapChanged(sender *webkit.Element, event *webkit.EventElement) {
+func (i *index) inputMapChanged(sender *gowd.Element, event *gowd.EventElement) {
 	conf.Options.MapQuestAPIKey = i.inputMapQuest.GetValue()
 	i.saveConfig(true)
 }

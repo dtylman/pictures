@@ -1,12 +1,12 @@
 package view
 
 import (
-	"github.com/dtylman/pictures/webkit"
-	"github.com/dtylman/pictures/webkit/bootstrap"
+	"github.com/dtylman/gowd"
+	"github.com/dtylman/gowd/bootstrap"
 )
 
 type search struct {
-	*webkit.Element
+	*gowd.Element
 	parent parentControls
 }
 

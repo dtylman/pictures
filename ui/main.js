@@ -49,12 +49,20 @@ function restart_process(){
 }
 
 function element_as_object(elem){
-    var obj = {
-        value : elem.value,
-        attributes : {}
+    var obj = {        
+        properties : {}
     }
     for (var j=0;j<elem.attributes.length;j++){
-        obj.attributes[elem.attributes[j].name]=elem.attributes[j].value;         
+        obj.properties[elem.attributes[j].name]=elem.attributes[j].value;         
+    }
+    //overwrite attribtues with proeprties
+    if (elem.value!=null){
+        obj.properties["value"]=elem.value.toString();
+    }
+    if (elem.checked!=null && elem.checked) {       
+        obj.properties["checked"]="true";
+    } else{
+        delete(obj.properties["checked"]);
     }
     return obj;
 }
@@ -68,8 +76,9 @@ function element_by_tag_as_array(tag){
     return items;
 }
 
-function fire_event(sender){
+function fire_event(name, sender){
     var msg = {
+        name : name, 
         sender : element_as_object(sender),
         inputs : element_by_tag_as_array("input")
     }    
