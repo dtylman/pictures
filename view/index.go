@@ -9,19 +9,18 @@ import (
 
 type index struct {
 	*gowd.Element
-	progressBar    *bootstrap.ProgressBar
-	btnStop        *gowd.Element
-	btnStart       *gowd.Element
-	btnAddFolder   *bootstrap.FileButton
-	chkLocation    *bootstrap.Checkbox
-	chkReIndex     *bootstrap.Checkbox
-	inputMapQuest  *bootstrap.Input
-	SourceFolders  *gowd.Element
-	parentControls parentControls
+	progressBar   *bootstrap.ProgressBar
+	btnStop       *gowd.Element
+	btnStart      *gowd.Element
+	btnAddFolder  *bootstrap.FileButton
+	chkLocation   *bootstrap.Checkbox
+	chkReIndex    *bootstrap.Checkbox
+	inputMapQuest *bootstrap.Input
+	SourceFolders *gowd.Element
 }
 
-func newIndex(p parentControls) *index {
-	i := &index{parentControls: p}
+func newIndex() *index {
+	i := new(index)
 	i.Element = gowd.NewElement("div")
 
 	i.chkLocation = bootstrap.NewCheckBox("Include Locations", false)
@@ -84,7 +83,7 @@ func (i *index) updateIndexerProgress(progress indexer.IndexerProgress) {
 	if !progress.Running {
 		i.updateState()
 	}
-	i.parentControls.Render()
+	Root.Render()
 }
 
 func (i *index) btnSourceFolderDelete(sender *gowd.Element, event *gowd.EventElement) {
@@ -100,7 +99,7 @@ func (i *index) btnStartClicked(sender *gowd.Element, event *gowd.EventElement) 
 		ProgressHandler: i.updateIndexerProgress,
 	})
 	if err != nil {
-		i.parentControls.addAlertError(err)
+		Root.addAlertError(err)
 	}
 	i.updateState()
 }
@@ -123,11 +122,11 @@ func (i *index) inputMapChanged(sender *gowd.Element, event *gowd.EventElement) 
 
 func (i *index) saveConfig(showAlert bool) {
 	if showAlert {
-		i.parentControls.addAlert("", "Configuration Saved.", bootstrap.AlertInfo)
+		Root.addAlert("", "Configuration Saved.", bootstrap.AlertInfo)
 	}
 	err := conf.Save()
 	if err != nil {
-		i.parentControls.addAlertError(err)
+		Root.addAlertError(err)
 		return
 	}
 	i.updateState()

@@ -1,17 +1,9 @@
 package view
 
 import (
-	"fmt"
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
 )
-
-//parentControls is an interface for the main page
-type parentControls interface {
-	addAlert(title string, caption string, alertType string)
-	addAlertError(err error)
-	Render() error
-}
 
 type main struct {
 	*gowd.Element
@@ -24,17 +16,11 @@ type main struct {
 	index  *index
 }
 
-var root = newMain()
-
 func newMain() *main {
 	m := new(main)
 
 	// body
 	m.Element = bootstrap.NewContainer(true)
-	btn := bootstrap.NewButton(bootstrap.ButtonPrimary, "lala")
-	btn.Object = "lala"
-	btn.OnEvent(gowd.OnClick, m.koko)
-	m.AddElement(btn)
 	//menu
 	m.menu = newMainMenu()
 	m.menu.btnSearch.OnEvent(gowd.OnClick, m.btnSearchClick)
@@ -50,18 +36,10 @@ func newMain() *main {
 	m.AddElement(m.content)
 
 	//views
-	m.index = newIndex(m)
-	m.search = newSearch(m)
+	m.index = newIndex()
+	m.search = newSearch()
 	// footer
 	return m
-}
-
-func (m *main) koko(sender *gowd.Element, elemnt *gowd.EventElement) {
-
-	for i := 0; i < 100; i++ {
-		m.menu.btnIndex.SetText(fmt.Sprintf("counting %v", i))
-		m.Render()
-	}
 }
 
 func (m *main) btnSearchClick(*gowd.Element, *gowd.EventElement) {
@@ -87,9 +65,4 @@ func (m *main) addAlert(title string, caption string, alertType string) {
 
 func (m *main) addAlertError(err error) {
 	m.addAlert("Error", err.Error(), bootstrap.AlertDanger)
-}
-
-//RootElement returns the root "body" container
-func RootElement() *gowd.Element {
-	return root.Element
 }

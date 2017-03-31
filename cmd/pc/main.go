@@ -25,7 +25,8 @@ func run() error {
 		return err
 	}
 	defer db.Close()
-	err = gowd.Run(view.RootElement())
+	view.InitializeComponents()
+	err = gowd.Run(view.Root.Element)
 	if err != nil {
 		return err
 	}
