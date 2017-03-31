@@ -102,7 +102,7 @@ func (s *Search) PrevImage() error {
 
 func (s *Search) NextPage() error {
 	from := s.start + conf.Options.SearchPageSize
-	if from > int(s.Result.Total) {
+	if from >= int(s.Result.Total) {
 		//no where to go
 		return nil
 	}

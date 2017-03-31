@@ -20,5 +20,5 @@ func (ip *IndexerProgress) Percentage() int {
 }
 
 func (i *IndexerProgress) Text() string {
-	return fmt.Sprintf("Running: %v %s: %v files (%s)", i.Running, i.CurrentFolder, i.TotalFiles, datasize.ByteSize(i.TotalSize).HumanReadable())
+	return fmt.Sprintf("Indexing %s: %v files (%s)", i.CurrentFolder, i.TotalFiles, datasize.ByteSize(i.TotalSize).HumanReadable())
 }

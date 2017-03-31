@@ -2,6 +2,7 @@ package view
 
 import (
 	"github.com/blevesearch/bleve"
+	"github.com/blevesearch/bleve/search/query"
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
 	"github.com/dtylman/pictures/server/model"
@@ -12,7 +13,6 @@ type search struct {
 	inputSearch  *bootstrap.Input
 	btnSearch    *gowd.Element
 	albums       *gowd.Element
-	pagination   *bootstrap.Pagination
 	panelSearch  *gowd.Element
 	activeSearch *model.Search
 }
@@ -26,18 +26,23 @@ func newSearch() *search {
 	s.AddElement(s.inputSearch.Element)
 
 	s.btnSearch = bootstrap.NewButton(bootstrap.ButtonPrimary, "Search")
+	s.btnSearch.OnEvent(gowd.OnClick, s.btnSearchClick)
 	s.AddElement(s.btnSearch)
 
-	s.panelSearch = bootstrap.NewRow()
+	s.panelSearch = bootstrap.NewContainer(true)
 	s.AddElement(s.panelSearch)
-
-	s.populateSearch()
+	s.populateSearchResults()
 
 	return s
 }
 
-func (s *search) populateSearch() {
+func (s *search) populateSearchResults() {
 	s.panelSearch.RemoveElements()
+
+	well := bootstrap.NewElement("div", "well")
+	s.panelSearch.AddElement(well)
+	row := bootstrap.NewRow()
+	well.AddElement(row)
 
 	if s.activeSearch == nil {
 		var err error
@@ -48,38 +53,81 @@ func (s *search) populateSearch() {
 		}
 	}
 
-	for _, thumb := range s.activeSearch.Thumbs {
+	for i, thumb := range s.activeSearch.Thumbs {
 		img := bootstrap.NewElement("img", "img-thumbnail")
 		img.SetAttribute("src", "file:///"+thumb.Path)
+
+		link := bootstrap.NewLinkButton("")
+		link.Object = i
+		link.OnEvent(gowd.OnClick, s.thumbClick)
+		link.AddElement(img)
+
 		col := bootstrap.NewColumn(bootstrap.ColumnXtraSmall, 3)
-		col.AddElement(img)
-		s.panelSearch.AddElement(col)
+		col.AddElement(link)
+
+		row.AddElement(col)
 	}
 
 	//build the pagination
-	s.pagination = bootstrap.NewPagination()
+	pagination := bootstrap.NewPagination()
 	btn := bootstrap.NewLinkButton("<<")
 	btn.OnEvent(gowd.OnClick, s.btnPrevClick)
-	s.pagination.Items.AddItem(btn)
+	pagination.Items.AddItem(btn)
 	for _, page := range s.activeSearch.Pages {
 		btn := bootstrap.NewLinkButton(page.Caption)
 		btn.Object = page
-		s.pagination.Items.AddItem(btn)
+		btn.OnEvent(gowd.OnClick, s.btnPageClick)
+		item := pagination.Items.AddItem(btn)
+		if page.Active {
+			item.SetClass("active")
+		}
 
 	}
 	btn = bootstrap.NewLinkButton(">>")
 	btn.OnEvent(gowd.OnClick, s.btnNextClick)
-	s.pagination.Items.AddItem(btn)
-	s.panelSearch.AddElement(s.pagination.Element)
+	pagination.Items.AddItem(btn)
+	s.panelSearch.AddElement(pagination.Element)
+}
+
+func (s *search) btnPageClick(sender *gowd.Element, event *gowd.EventElement) {
+	page := sender.Object.(model.PageItem)
+	err := s.activeSearch.StartFrom(page.From)
+	if err != nil {
+		Root.addAlertError(err)
+		return
+	}
+	s.populateSearchResults()
 }
 
 func (s *search) btnPrevClick(sender *gowd.Element, event *gowd.EventElement) {
 	s.activeSearch.PrevPage()
-	s.populateSearch()
+	s.populateSearchResults()
 }
 
-func (s *search) btnNextClick(sender *gowd.Element,
-	event *gowd.EventElement) {
+func (s *search) btnNextClick(sender *gowd.Element, event *gowd.EventElement) {
 	s.activeSearch.NextPage()
-	s.populateSearch()
+	s.populateSearchResults()
+}
+
+func (s *search) btnSearchClick(sender *gowd.Element, event *gowd.EventElement) {
+	term := s.inputSearch.GetValue()
+	var query query.Query
+	if term == "" {
+		query = bleve.NewMatchAllQuery()
+	} else {
+		query = bleve.NewQueryStringQuery(term)
+	}
+	var err error
+	s.activeSearch, err = model.NewSearch(term, query)
+	if err != nil {
+		Root.addAlertError(err)
+		return
+	}
+	s.populateSearchResults()
+}
+
+func (s *search) thumbClick(sender *gowd.Element, event *gowd.EventElement) {
+	hit := sender.Object.(int)
+	s.activeSearch.SetActiveImage(hit)
+	Root.setActiveView(newImage(s.activeSearch).Element)
 }
