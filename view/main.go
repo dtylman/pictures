@@ -43,13 +43,11 @@ func newMain() *main {
 }
 
 func (m *main) btnSearchClick(*gowd.Element, *gowd.EventElement) {
-	m.menu.SetActiveElement(m.menu.btnSearch)
 	m.setActiveView(m.search.Element)
 }
 
 func (m *main) btnIndexClick(sender *gowd.Element, e *gowd.EventElement) {
 	m.index.updateState()
-	m.menu.SetActiveElement(m.menu.btnIndex)
 	m.setActiveView(m.index.Element)
 }
 

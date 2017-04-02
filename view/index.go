@@ -44,16 +44,24 @@ func newIndex() *index {
 	i.btnAddFolder = bootstrap.NewFileButton(bootstrap.ButtonDefault, "Add folder", true)
 	i.btnAddFolder.OnChange(i.btnAddFolderChanged)
 
-	i.AddElement(i.chkLocation.Element)
-	i.AddElement(i.chkReIndex.Element)
-	i.AddElement(i.inputMapQuest.Element)
+	pnl := bootstrap.NewPanel(bootstrap.PanelDefault)
+	pnl.AddTitle("Indexing Options:")
+	pnl.AddToBody(i.chkLocation.Element)
+	pnl.AddToBody(i.chkReIndex.Element)
+	pnl.AddToBody(i.inputMapQuest.Element)
+	i.AddElement(pnl.Element)
 
-	i.AddElement(i.SourceFolders)
-	i.AddElement(i.btnAddFolder.Element)
+	pnl = bootstrap.NewPanel(bootstrap.PanelDefault)
+	pnl.AddTitle("Source Folders: ")
+	pnl.AddToHeading(gowd.NewStyledText("(These will be scanned)", gowd.SmallText))
+	pnl.AddToBody(i.SourceFolders)
+	pnl.AddToBody(i.btnAddFolder.Element)
 
-	i.AddElement(i.btnStart)
-	i.AddElement(i.btnStop)
+	i.AddElement(pnl.Element)
 
+	i.AddElement(bootstrap.NewElement("div", "well", bootstrap.NewElement("div", "btn-toolbar", i.btnStart, i.btnStop)))
+
+	i.AddElement(gowd.NewStyledText("Progress:", gowd.Paragraph))
 	i.AddElement(i.progressBar.Element)
 
 	i.updateState()

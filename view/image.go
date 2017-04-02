@@ -38,7 +38,7 @@ func newImage(activeSearch *model.Search) *image {
 
 	pnl := bootstrap.NewPanel(bootstrap.PanelDefault)
 	pnl.AddTitle(activeSearch.ActiveImage.Name)
-	pnl.AddBody(row)
+	pnl.AddToBody(row)
 
 	i.AddElement(pnl.Element)
 	return i
