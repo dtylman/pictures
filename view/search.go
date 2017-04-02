@@ -10,7 +10,7 @@ import (
 
 type search struct {
 	*gowd.Element
-	inputSearch  *bootstrap.Input
+	inputSearch  *gowd.Element
 	btnSearch    *gowd.Element
 	albums       *gowd.Element
 	panelSearch  *gowd.Element
@@ -21,13 +21,16 @@ func newSearch() *search {
 	s := new(search)
 	s.Element = bootstrap.NewContainer(true)
 
-	s.inputSearch = bootstrap.NewInput(bootstrap.InputTypeText, "Search")
+	s.inputSearch = bootstrap.NewInput(bootstrap.InputTypeText)
 	s.inputSearch.SetAttribute("placeholder", "Search...")
-	s.AddElement(s.inputSearch.Element)
-
+	s.inputSearch.SetClass("form-control")
 	s.btnSearch = bootstrap.NewButton(bootstrap.ButtonPrimary, "Search")
 	s.btnSearch.OnEvent(gowd.OnClick, s.btnSearchClick)
-	s.AddElement(s.btnSearch)
+
+	s.AddElement(
+		bootstrap.NewFormGroup(
+			bootstrap.NewInputGroup(
+				s.inputSearch, bootstrap.NewElement("span", "input-group-btn", s.btnSearch))))
 
 	s.panelSearch = bootstrap.NewContainer(true)
 	s.AddElement(s.panelSearch)

@@ -1,9 +1,0 @@
-{
-  "name": "pictures",
-  "main": "index.html",
-  "window": {
-    "position": "center",
-    "width": 1400,
-    "height": 800
-  }
-}

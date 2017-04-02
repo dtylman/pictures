@@ -15,7 +15,7 @@ type index struct {
 	btnAddFolder  *bootstrap.FileButton
 	chkLocation   *bootstrap.Checkbox
 	chkReIndex    *bootstrap.Checkbox
-	inputMapQuest *bootstrap.Input
+	inputMapQuest *bootstrap.FormInput
 	SourceFolders *gowd.Element
 }
 
@@ -28,7 +28,7 @@ func newIndex() *index {
 
 	i.SourceFolders = gowd.NewElement("div")
 
-	i.inputMapQuest = bootstrap.NewInput(bootstrap.InputTypeText, "MapQuest API Key")
+	i.inputMapQuest = bootstrap.NewFormInput(bootstrap.InputTypeText, "MapQuest API Key")
 	i.inputMapQuest.SetHelpText("Required for Geolocation")
 	i.inputMapQuest.SetPlaceHolder("API KEY...")
 	i.inputMapQuest.OnEvent(gowd.OnChange, i.inputMapChanged)
