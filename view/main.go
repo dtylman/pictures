@@ -8,12 +8,13 @@ import (
 type main struct {
 	*gowd.Element
 	menu    *mainMenu
+	toolbar *gowd.Element
 	alerts  *gowd.Element
 	content *gowd.Element
 
 	//views
-	search *search
-	index  *index
+	search view
+	index  view
 }
 
 func newMain() *main {
@@ -26,6 +27,10 @@ func newMain() *main {
 	m.menu.btnSearch.OnEvent(gowd.OnClick, m.btnSearchClick)
 	m.menu.btnIndex.OnEvent(gowd.OnClick, m.btnIndexClick)
 	m.AddElement(m.menu.Element)
+
+	m.toolbar = bootstrap.NewElement("div", "navbar btn-toolbar")
+	m.toolbar.SetAttribute("style", "margin-top: 5px;")
+	m.AddElement(m.toolbar)
 
 	// alerts
 	m.alerts = gowd.NewElement("div")
@@ -43,18 +48,21 @@ func newMain() *main {
 }
 
 func (m *main) btnSearchClick(*gowd.Element, *gowd.EventElement) {
-	m.setActiveView(m.search.Element)
+	m.setActiveView(m.search)
 }
 
 func (m *main) btnIndexClick(sender *gowd.Element, e *gowd.EventElement) {
-	m.index.updateState()
-	m.setActiveView(m.index.Element)
+	m.setActiveView(m.index)
 }
 
-func (m *main) setActiveView(view *gowd.Element) {
-	//view.onAlert(me)
+func (m *main) setActiveView(view view) {
+	view.updateState()
+
+	m.toolbar.RemoveElements()
+	view.populateToolbar(m.toolbar)
+
 	m.content.RemoveElements()
-	m.content.AddElement(view)
+	m.content.AddElement(view.getContent())
 }
 
 func (m *main) addAlert(title string, caption string, alertType string) {

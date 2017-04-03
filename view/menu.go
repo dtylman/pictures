@@ -19,6 +19,7 @@ func newMainMenu() *mainMenu {
 	m.Navbar = bootstrap.NewNavBar(bootstrap.NavbarDefault)
 
 	list := m.Navbar.AddList()
+	list.SetClass("nav-pills")
 
 	m.btnSearch = bootstrap.NewButton(bootstrap.ButtonDefault, "Search")
 	m.btnSearch.SetClass("navbar-btn")
@@ -38,6 +39,7 @@ func newMainMenu() *mainMenu {
 
 	list = m.Navbar.AddList()
 	list.SetClass("navbar-right")
+	list.SetClass("nav-pills")
 
 	m.btnAbout = bootstrap.NewButton(bootstrap.ButtonDefault, "About")
 	m.btnAbout.SetClass("navbar-btn")

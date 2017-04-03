@@ -35,6 +35,7 @@ type ImageItem struct {
 	Path     string
 	ID       string
 	Location string
+	MimeType string
 	Details  map[string]interface{}
 }
 
@@ -74,6 +75,7 @@ func (s *Search) SetActiveImage(hit int) {
 	s.ActiveImage.Details = s.Result.Hits[hit].Fields
 	s.ActiveImage.Path = s.Result.Hits[hit].Fields["path"].(string)
 	s.ActiveImage.Location = s.Result.Hits[hit].Fields["location"].(string)
+	s.ActiveImage.MimeType = s.Result.Hits[hit].Fields["mime_type"].(string)
 	s.ActiveImage.Name = filepath.Base(s.ActiveImage.Path)
 }
 

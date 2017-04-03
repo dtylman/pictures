@@ -1,9 +1,15 @@
 {
   "name": "pictures",
   "main": "index.html",
+  "single-instance": true,
   "window": {
     "position": "center",
-    "width": 1400,
-    "height": 800
-  }
+    "width": 1500,
+    "height": 900,
+    "frame": true
+  },
+  "webkit": {
+    "plugin": true
+  },
+  "version": "0.1.0"
 }

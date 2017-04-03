@@ -1,16 +1,27 @@
-
 var child;
 var fails = 0;
 
+var goBinary = "./app"; //or app.exe
+
+function setPage(html){
+    const container = document.getElementById("app");
+    app.innerHTML = html;
+    //set focus for autofocus element
+    var elem = document.querySelector("input[autofocus]");
+    if (elem!=null){
+        elem.focus();
+    }
+}
+
 function body_message(msg){    
-    document.body.innerHTML = '<h1>'+msg+'</h1>';        
+    setPage('<h1>'+msg+'</h1>');
 }
 
 function start_process() {
      body_message("Loading...");
 
     const spawn = require('child_process').spawn;
-    child = spawn('./app',{maxBuffer:1024*500});
+    child = spawn(goBinary,{maxBuffer:1024*500});
     
     const readline = require('readline');
     const rl = readline.createInterface({
@@ -19,7 +30,7 @@ function start_process() {
 
     rl.on('line', (data) => {        
         console.log(`Received: ${data}`);
-        document.body.innerHTML = data;
+        setPage(data);        
     });
 
     child.stderr.on('data', (data) => {
@@ -55,7 +66,7 @@ function element_as_object(elem){
     for (var j=0;j<elem.attributes.length;j++){
         obj.properties[elem.attributes[j].name]=elem.attributes[j].value;         
     }
-    //overwrite attribtues with proeprties
+    //overwrite attributes with properties
     if (elem.value!=null){
         obj.properties["value"]=elem.value.toString();
     }
@@ -84,6 +95,13 @@ function fire_event(name, sender){
     }    
     child.stdin.write(JSON.stringify(msg));
     console.log(JSON.stringify(msg));
+}
+
+function fire_keypressed_event(e,keycode,name,sender){
+     if(e.keyCode === keycode){
+            e.preventDefault(); 
+            fire_event(name,sender);
+        }
 }
 
 function avoid_reload(){

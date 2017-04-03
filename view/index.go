@@ -52,14 +52,12 @@ func newIndex() *index {
 	i.AddElement(pnl.Element)
 
 	pnl = bootstrap.NewPanel(bootstrap.PanelDefault)
-	pnl.AddTitle("Source Folders: ")
-	pnl.AddToHeading(gowd.NewStyledText("(These will be scanned)", gowd.SmallText))
+	title := pnl.AddTitle("Source Folders: ")
+	title.AddElement(gowd.NewStyledText("(These will be scanned)", gowd.SmallText))
 	pnl.AddToBody(i.SourceFolders)
 	pnl.AddToBody(i.btnAddFolder.Element)
 
 	i.AddElement(pnl.Element)
-
-	i.AddElement(bootstrap.NewElement("div", "well", bootstrap.NewElement("div", "btn-toolbar", i.btnStart, i.btnStop)))
 
 	i.AddElement(gowd.NewStyledText("Progress:", gowd.Paragraph))
 	i.AddElement(i.progressBar.Element)
@@ -67,6 +65,15 @@ func newIndex() *index {
 	i.updateState()
 
 	return i
+}
+
+func (i *index) getContent() *gowd.Element {
+	return i.Element
+}
+
+func (i *index) populateToolbar(toolbar *gowd.Element) {
+	toolbar.AddElement(i.btnStart)
+	toolbar.AddElement(i.btnStop)
 }
 
 func (i *index) updateState() {

@@ -52,10 +52,8 @@ func NewIndex(path string, info os.FileInfo) (*Index, error) {
 	pic.Album = filepath.Base(folder)
 	pic.FileTime = info.ModTime()
 	pic.MimeType = mimemagic.Match("", sig)
-	mimeType := strings.Split(pic.MimeType, "/")[0]
-
-	if mimeType != Image && mimeType != Video {
-		return nil, errors.New(fmt.Sprintf("File '%s' is '%s' and not '%s' or '%s'", path, mimeType, Image, Video))
+	if !MimeIs(pic.MimeType, Image, Video) {
+		return nil, errors.New(fmt.Sprintf("File '%s' is '%s' and not '%s' or '%s'", path, pic.MimeType, Image, Video))
 	}
 	err = pic.populateMD5(file)
 	if err != nil {
@@ -111,4 +109,15 @@ func (i *Index) populateMD5(file *os.File) error {
 	}
 	i.MD5 = hex.EncodeToString(h.Sum(nil))
 	return nil
+}
+
+//MimeIs return true if mime type is one of the provided array
+func MimeIs(mimeType string, pictureType ...string) bool {
+	base := strings.Split(mimeType, "/")[0]
+	for _, wanted := range pictureType {
+		if wanted == base {
+			return true
+		}
+	}
+	return false
 }

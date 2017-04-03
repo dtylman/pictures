@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
+	"github.com/dtylman/pictures/indexer/picture"
 	"github.com/dtylman/pictures/server/model"
 )
 
@@ -17,19 +18,50 @@ func newImage(activeSearch *model.Search) *image {
 	i.Element = bootstrap.NewElement("div", "well")
 	i.activeSearch = activeSearch
 
-	img := gowd.NewElement("img")
-	img.SetAttribute("src", fmt.Sprintf("file:///%s", activeSearch.ActiveImage.Path))
+	i.updateState()
 
-	imageLink := bootstrap.NewLinkButton("")
-	imageLink.SetClass("thumbnail")
-	imageLink.SetAttribute("width", "100%")
-	imageLink.AddElement(img)
+	return i
+}
 
+func (i *image) populateToolbar(toolbar *gowd.Element) {
+	btnPrev := bootstrap.NewButton(bootstrap.ButtonDefault, "Prev")
+	btnPrev.OnEvent(gowd.OnClick, i.btnNextClicked)
+	toolbar.AddElement(btnPrev)
+
+	btnNext := bootstrap.NewButton(bootstrap.ButtonDefault, "Next")
+	btnNext.OnEvent(gowd.OnClick, i.btnNextClicked)
+	toolbar.AddElement(btnNext)
+
+}
+
+func (i *image) btnPrevClicked(sender *gowd.Element, event *gowd.EventElement) {
+	i.activeSearch.PrevImage()
+	i.updateState()
+}
+
+func (i *image) btnNextClicked(sender *gowd.Element, event *gowd.EventElement) {
+	i.activeSearch.NextImage()
+	i.updateState()
+}
+
+func (i *image) updateState() {
+	i.Element.RemoveElements()
 	col := bootstrap.NewColumn(bootstrap.ColumnLarge, 9)
-	col.AddElement(imageLink)
-
 	row := bootstrap.NewRow()
 	row.AddElement(col)
+	mimeType := i.activeSearch.ActiveImage.MimeType
+	if picture.MimeIs(mimeType, picture.Image) {
+		img := bootstrap.NewElement("img", "img-responsive")
+		img.SetAttribute("src", fmt.Sprintf("file:///%s", i.activeSearch.ActiveImage.Path))
+
+		col.AddElement(img)
+	} else if picture.MimeIs(mimeType, picture.Video) {
+		vid := bootstrap.NewElement("video", "")
+		vid.SetAttribute("src", fmt.Sprintf("file:///%s", i.activeSearch.ActiveImage.Path))
+		vid.SetAttribute("type", mimeType)
+		col.AddElement(vid)
+
+	}
 
 	table := bootstrap.QuickTable("", i.activeSearch.ActiveImage.Details)
 	col = bootstrap.NewColumn(bootstrap.ColumnLarge, 3)
@@ -37,9 +69,11 @@ func newImage(activeSearch *model.Search) *image {
 	row.AddElement(col)
 
 	pnl := bootstrap.NewPanel(bootstrap.PanelDefault)
-	pnl.AddTitle(activeSearch.ActiveImage.Name)
+	pnl.AddTitle(i.activeSearch.ActiveImage.Name)
 	pnl.AddToBody(row)
 
 	i.AddElement(pnl.Element)
-	return i
+}
+func (i *image) getContent() *gowd.Element {
+	return i.Element
 }
