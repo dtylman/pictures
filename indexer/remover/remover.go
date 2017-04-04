@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/dtylman/pictures/indexer/db"
 	"github.com/dtylman/pictures/indexer/picture"
-	"log"
+	"github.com/dtylman/pictures/tasklog"
 	"os"
 )
 
@@ -19,16 +19,16 @@ func (s *scanner) Remove() error {
 
 func (s *scanner) scanPicture(key string, image *picture.Index, err error) {
 	if err != nil {
-		log.Println(err)
+		tasklog.Error(err)
 		return
 	}
 	if image == nil {
-		log.Println("error! image is null for ", key)
+		tasklog.Println("error! image is null for ", key)
 		return
 	}
 	_, err = os.Stat(image.Path)
 	if err != nil {
-		log.Println(fmt.Sprintf("image: %v, error: %v", image.Path, err))
+		tasklog.Println(fmt.Sprintf("image: %v, error: %v", image.Path, err))
 		s.itemsToRemove = append(s.itemsToRemove, image.MD5)
 	}
 }

@@ -27,15 +27,6 @@ func Search(req *bleve.SearchRequest) (*bleve.SearchResult, error) {
 	return idx.Search(req)
 }
 
-//GetImage gets image info by image id
-func GetImage(imageID string) (*picture.Index, error) {
-	index := new(picture.Index)
-	return index, bdb.View(func(tx *bolt.Tx) error {
-		data := tx.Bucket(imagesBucket).Get([]byte(imageID))
-		return json.Unmarshal(data, index)
-	})
-}
-
 //HasImage returns tue if image wiith ID exists
 func HasImage(imageID string) bool {
 	var exists bool

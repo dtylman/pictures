@@ -7,11 +7,10 @@ import (
 	"github.com/dtylman/pictures/indexer/picture"
 	"github.com/dtylman/pictures/indexer/remover"
 	"github.com/dtylman/pictures/indexer/thumbs"
-	"github.com/dtylman/pictures/progressbar"
+	"github.com/dtylman/pictures/tasklog"
 	"github.com/jasonwinn/geocoder"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/mknote"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -24,11 +23,12 @@ func init() {
 
 //Start starts the indexer
 func Start(options Options) error {
-	log.Println("Starting index with options: ", options)
-	err := indexer.SetStarted(options)
+	tasklog.Println("Starting index with options: ", options)
+	err := indexer.initialize(options)
 	if err != nil {
 		return err
 	}
+	indexer.fireProgressEvent()
 	if options.IndexLocation == true {
 		if conf.Options.MapQuestAPIKey == "" {
 			return errors.New("API KEY for map quest is empty")
@@ -47,11 +47,6 @@ func Stop() {
 //IsRunning returns true if indexer is running
 func IsRunning() bool {
 	return indexer.IsRunning()
-}
-
-//GetProgressStatus returns status for a progress bar
-func GetProgressStatus() *progressbar.Status {
-	return indexer.ProgressStatus()
 }
 
 func indexOne(path string, info os.FileInfo, e1 error) error {
@@ -74,6 +69,7 @@ func indexOne(path string, info os.FileInfo, e1 error) error {
 			}
 		}
 		indexer.incFile(info.Size())
+		indexer.fireProgressEvent()
 	}
 	return nil
 }
@@ -83,8 +79,13 @@ func index(rootPath string) error {
 }
 
 func indexPictures() {
-	log.Println("Indexing ")
-	defer indexer.setDone()
+	tasklog.Println("Indexing ")
+
+	defer func() {
+		indexer.setDone()
+		indexer.fireProgressEvent()
+	}()
+
 	for _, folder := range conf.Options.SourceFolders {
 		indexer.incSourceFolder()
 		err := index(folder)
@@ -94,7 +95,7 @@ func indexPictures() {
 	}
 	err := remover.Remove()
 	if err != nil {
-		log.Println(err)
+		tasklog.Println(err)
 	}
 }
 
