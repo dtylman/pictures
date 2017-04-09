@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/dtylman/gowd"
+	"github.com/dtylman/pictures/cmd/app/view"
 	"github.com/dtylman/pictures/conf"
 	"github.com/dtylman/pictures/indexer/db"
-	"github.com/dtylman/pictures/view"
 	"net/http"
 	_ "net/http/pprof"
 )
