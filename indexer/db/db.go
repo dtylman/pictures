@@ -44,7 +44,7 @@ type WalkImagesFunc func(key string, image *picture.Index, err error)
 func WalkImages(wf WalkImagesFunc) {
 	bdb.View(func(tx *bolt.Tx) error {
 		c := tx.Bucket(imagesBucket).Cursor()
-		key, value := c.Next()
+		key, value := c.First()
 		for key != nil && value != nil {
 			key, value = c.Next()
 			pic := new(picture.Index)

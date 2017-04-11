@@ -15,11 +15,17 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"github.com/dtylman/pictures/indexer/darknet"
 )
 
 const (
 	Video = "video"
 	Image = "image"
+
+	PhaseThumb = "thumb"
+	PhaseLocation = "location"
+	PhaseObjects = "objects"
+	PhaseFaces = "faces"
 )
 
 type Index struct {
@@ -33,6 +39,8 @@ type Index struct {
 	Long     float64   `json:"long"`
 	Location string    `json:"location"`
 	Album    string    `json:"album"`
+	Objects  []darknet.Object    `json:"objects"`
+	Phases   map[string]time.Time `json:"phases"`
 }
 
 func NewIndex(path string, info os.FileInfo) (*Index, error) {
@@ -59,8 +67,10 @@ func NewIndex(path string, info os.FileInfo) (*Index, error) {
 	if err != nil {
 		return nil, err
 	}
-	_ = pic.populateExif(file)
-	//todo: add error
+	err = pic.populateExif(file)
+	if err != nil {
+		tasklog.Error(err)
+	}
 	return pic, nil
 }
 
@@ -81,17 +91,14 @@ func (i *Index) populateExif(file *os.File) error {
 	i.Exif = ""
 	err = x.Walk(i)
 	if err != nil {
-		//todo: add error
 		tasklog.Error(err)
 	}
 	i.Taken, err = x.DateTime()
 	if err != nil {
-		//todo: add error
 		tasklog.Error(err)
 	}
 	i.Lat, i.Long, err = x.LatLong()
 	if err != nil {
-		//todo: add error
 		tasklog.Error(err)
 	}
 	return nil
@@ -109,6 +116,21 @@ func (i *Index) populateMD5(file *os.File) error {
 	}
 	i.MD5 = hex.EncodeToString(h.Sum(nil))
 	return nil
+}
+
+func (i*Index) HasPhase(name string) bool {
+	if i.Phases == nil {
+		return false
+	}
+	_, exists := i.Phases[name]
+	return exists
+}
+
+func (i*Index) SetPhase(name string) {
+	if i.Phases == nil {
+		i.Phases = make(map[string]time.Time)
+	}
+	i.Phases[name] = time.Now()
 }
 
 //MimeIs return true if mime type is one of the provided array

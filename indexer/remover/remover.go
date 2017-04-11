@@ -13,11 +13,11 @@ type scanner struct {
 }
 
 func (s *scanner) Remove() error {
-	db.WalkImages(s.scanPicture)
+	db.WalkImages(s.checkImage)
 	return db.Remove(s.itemsToRemove)
 }
 
-func (s *scanner) scanPicture(key string, image *picture.Index, err error) {
+func (s *scanner) checkImage(key string, image *picture.Index, err error) {
 	if err != nil {
 		tasklog.Error(err)
 		return

@@ -13,13 +13,13 @@ func TestStart(t *testing.T) {
 		t.Fatal(err)
 	}
 	//geocoder.SetAPIKey("8cCGEGGioKhpCLPjhAG44NfXYaXs9jCk")
-	err = Start(Options{IndexLocation: false, ReIndex: false})
+	err = Start(Options{WithLocation: false, DeleteDatabase: false})
 	if err != nil {
 		t.Fatal(err)
 	}
 	assert.NoError(t, err)
 	assert.True(t, IsRunning())
-	err = Start(Options{IndexLocation: false, ReIndex: false})
+	err = Start(Options{WithLocation: false, DeleteDatabase: false})
 	assert.Error(t, err)
 	for IsRunning() {
 		time.Sleep(time.Second)

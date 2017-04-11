@@ -1,10 +1,11 @@
-package picture
+package location
 
 import (
 	"fmt"
 	"github.com/jasonwinn/geocoder"
 	"github.com/pariz/gountries"
 	"sync"
+	"github.com/dtylman/pictures/indexer/picture"
 )
 
 type locationCache struct {
@@ -27,17 +28,17 @@ func (l *locationCache) get(lat, long float64) *string {
 }
 
 func (l *locationCache) keyFor(lat, long float64) float64 {
-	return 0.5*(lat+long)*(lat+long+1) + long
+	return 0.5 * (lat + long) * (lat + long + 1) + long
 }
 
-func (l *locationCache) put(i *Index) {
+func (l *locationCache) put(i *picture.Index) {
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
 	l.items[l.keyFor(i.Lat, i.Long)] = &i.Location
 }
 
 //PopulateLocation adds location data from MapQuest to the index
-func (i *Index) PopulateLocation() error {
+func PopulateLocation(i *picture.Index) error {
 	if i.Lat == 0 || i.Long == 0 {
 		return nil
 	}

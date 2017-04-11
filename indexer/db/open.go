@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	idx          bleve.Index
+	idx bleve.Index
 	bdb          *bolt.DB
 	imagesBucket = []byte("images")
 )
@@ -65,4 +65,36 @@ func Open() error {
 func Close() {
 	idx.Close()
 	bdb.Close()
+}
+
+func DeleteDatabase() error {
+	err := idx.Close()
+	if err != nil {
+		return err
+	}
+	err = bdb.Close()
+	if err != nil {
+		return err
+	}
+	path, err := conf.BlevePath()
+	if err != nil {
+		return err
+	}
+	err = os.RemoveAll(path)
+	if err != nil {
+		return err
+	}
+	path, err = conf.BoltPath()
+	if err != nil {
+		return err
+	}
+	err = os.RemoveAll(path)
+	if err != nil {
+		return err
+	}
+	path, err = conf.FilesPath()
+	if err != nil {
+		return err
+	}
+	return os.RemoveAll(path)
 }

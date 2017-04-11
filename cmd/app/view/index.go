@@ -5,6 +5,8 @@ import (
 	"github.com/dtylman/gowd/bootstrap"
 	"github.com/dtylman/pictures/conf"
 	"github.com/dtylman/pictures/indexer"
+	"github.com/dtylman/pictures/tasklog"
+	"fmt"
 )
 
 //<a href="https://developer.mapquest.com/plan_purchase/steps/business_edition/business_edition_free/register">MapQuest </a>Key:
@@ -16,7 +18,9 @@ type index struct {
 	btnStart      *gowd.Element
 	btnAddFolder  *bootstrap.FileButton
 	chkLocation   *bootstrap.Checkbox
-	chkReIndex    *bootstrap.Checkbox
+	chkDeleteDB   *bootstrap.Checkbox
+	chkWithFaces  *bootstrap.Checkbox
+	chkWithObjs   *bootstrap.Checkbox
 	inputMapQuest *bootstrap.FormInput
 	SourceFolders *gowd.Element
 }
@@ -25,8 +29,10 @@ func newIndex() *index {
 	i := new(index)
 	i.Element = gowd.NewElement("div")
 
-	i.chkLocation = bootstrap.NewCheckBox("Include Locations", false)
-	i.chkReIndex = bootstrap.NewCheckBox("Reindex Existing Items", false)
+	i.chkLocation = bootstrap.NewCheckBox("With Locations", false)
+	i.chkWithObjs = bootstrap.NewCheckBox("With Objects", true)
+	i.chkWithFaces = bootstrap.NewCheckBox("With Faces", true)
+	i.chkDeleteDB = bootstrap.NewCheckBox("Delete Existing Data", false)
 
 	i.SourceFolders = gowd.NewElement("div")
 
@@ -49,7 +55,9 @@ func newIndex() *index {
 	pnl := bootstrap.NewPanel(bootstrap.PanelDefault)
 	pnl.AddTitle("Indexing Options:")
 	pnl.AddToBody(i.chkLocation.Element)
-	pnl.AddToBody(i.chkReIndex.Element)
+	pnl.AddToBody(i.chkWithObjs.Element)
+	pnl.AddToBody(i.chkWithFaces.Element)
+	pnl.AddToBody(i.chkDeleteDB.Element)
 	pnl.AddToBody(i.inputMapQuest.Element)
 	i.AddElement(pnl.Element)
 
@@ -63,6 +71,8 @@ func newIndex() *index {
 
 	i.AddElement(gowd.NewStyledText("Progress:", gowd.Paragraph))
 	i.AddElement(i.progressBar.Element)
+
+	tasklog.RegisterHandler(tasklog.IndexerTask, i.updateIndexerProgress)
 
 	i.updateState()
 
@@ -94,10 +104,10 @@ func (i *index) updateState() {
 
 }
 
-func (i *index) updateIndexerProgress(progress indexer.IndexerProgress) {
-	i.progressBar.SetText(progress.Text())
-	i.progressBar.SetValue(progress.Percentage())
-	if !progress.Running {
+func (i *index) updateIndexerProgress(status tasklog.Task) {
+	i.progressBar.SetText(fmt.Sprintf("%v", status.Messages))
+	i.progressBar.SetPercent(100)
+	if !status.Running {
 		i.updateState()
 	}
 	Root.Render()
@@ -111,9 +121,10 @@ func (i *index) btnSourceFolderDelete(sender *gowd.Element, event *gowd.EventEle
 
 func (i *index) btnStartClicked(sender *gowd.Element, event *gowd.EventElement) {
 	err := indexer.Start(indexer.Options{
-		IndexLocation:   i.chkLocation.Checked(),
-		ReIndex:         i.chkReIndex.Checked(),
-		ProgressHandler: i.updateIndexerProgress,
+		WithLocation:   i.chkLocation.Checked(),
+		DeleteDatabase:         i.chkDeleteDB.Checked(),
+		WithFaces: i.chkWithFaces.Checked(),
+		WithObjects: i.chkWithObjs.Checked(),
 	})
 	if err != nil {
 		Root.addAlertError(err)

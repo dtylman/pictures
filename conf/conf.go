@@ -10,8 +10,8 @@ import (
 
 const (
 	defaultConfFileName = "conf"
-	defaultBleveFolder  = "pictures.db"
-	defaultThumbFolder  = "thumbs"
+	defaultBleveFolder = "pictures.db"
+	defaultFilesPath = "files"
 	defaultBoltFileName = "bolt.db"
 )
 
@@ -20,17 +20,17 @@ var Options struct {
 	//MapQuestAPIKey API key for map quest service
 	MapQuestAPIKey string `json:"map_quest_api_key"`
 	//SourceFolders folders with pictures to scan
-	SourceFolders []string `json:"source_folders"`
+	SourceFolders  []string `json:"source_folders"`
 	//BackupFolder folder to backup
-	BackupFolder string `json:"backup_folder"`
+	BackupFolder   string `json:"backup_folder"`
 	//SearchPageSize the search page query size
 	SearchPageSize int `json:"search_page_size"`
 	//ThumbX thumbnail width
-	ThumbX uint `json:"thumb_x"`
+	ThumbX         uint `json:"thumb_x"`
 	//ThumbY thumbnail height
-	ThumbY uint `json:"thumb_y"`
+	ThumbY         uint `json:"thumb_y"`
 	//IdleSeconds wait time before application closes.
-	IdleSeconds uint `json:"idle_seconds"`
+	IdleSeconds    uint `json:"idle_seconds"`
 }
 
 func init() {
@@ -39,7 +39,7 @@ func init() {
 	Options.ThumbX = 300
 	Options.ThumbY = 200
 	Options.IdleSeconds = 5
-	thumbPath, err := ThumbPath()
+	thumbPath, err := FilesPath()
 	if err != nil {
 		panic(err)
 	}
@@ -124,6 +124,7 @@ func BoltPath() (string, error) {
 	return getPathForFile(defaultBoltFileName)
 }
 
-func ThumbPath() (string, error) {
-	return getPathForFile(defaultThumbFolder)
+//FilesPath is the place where files are stored.
+func FilesPath() (string, error) {
+	return getPathForFile(defaultFilesPath)
 }

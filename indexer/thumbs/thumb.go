@@ -8,16 +8,15 @@ import (
 	"image/jpeg"
 	_ "image/png"
 	"os"
-	"path/filepath"
+	"github.com/dtylman/pictures/indexer/db"
 )
 
 //MakeThumb creates a thumbnail from a picture and returns a path to the thumbnail
 func MakeThumb(srcPath string, md5 string, overwrite bool) (string, error) {
-	folder, err := conf.ThumbPath()
+	thumbFile, err := db.ImageFilePath(md5, "thumb")
 	if err != nil {
 		return srcPath, err
 	}
-	thumbFile := filepath.Join(folder, md5)
 	_, err = os.Stat(thumbFile)
 	if err == nil && !overwrite {
 		// already exists
