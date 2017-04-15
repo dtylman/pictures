@@ -31,6 +31,8 @@ var Options struct {
 	ThumbY         uint `json:"thumb_y"`
 	//IdleSeconds wait time before application closes.
 	IdleSeconds    uint `json:"idle_seconds"`
+	//DarknetTimeout, in seconds for wait to allow darknet to scan for objects.
+	DarknetTimeout uint `json:"darknet_timeout"`
 }
 
 func init() {
@@ -39,6 +41,7 @@ func init() {
 	Options.ThumbX = 300
 	Options.ThumbY = 200
 	Options.IdleSeconds = 5
+	Options.DarknetTimeout = 70
 	thumbPath, err := FilesPath()
 	if err != nil {
 		panic(err)

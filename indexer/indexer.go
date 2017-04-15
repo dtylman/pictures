@@ -1,11 +1,11 @@
 package indexer
 
 import (
-	"github.com/dtylman/pictures/tasklog"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/mknote"
 	"os"
 	"github.com/dtylman/pictures/indexer/darknet"
+	"log"
 )
 
 func init() {
@@ -43,5 +43,5 @@ func Start(options Options) error {
 }
 
 func AddError(path string, err error) {
-	tasklog.Printf("%s: %s", path, err.Error())
+	log.Printf("%s: %s", path, err.Error())
 }

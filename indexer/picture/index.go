@@ -10,12 +10,11 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/errors"
 	"io"
 
-	"github.com/dtylman/pictures/tasklog"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
-	"github.com/dtylman/pictures/indexer/darknet"
+	"github.com/dtylman/pictures/tasklog"
 )
 
 const (
@@ -39,7 +38,7 @@ type Index struct {
 	Long     float64   `json:"long"`
 	Location string    `json:"location"`
 	Album    string    `json:"album"`
-	Objects  []darknet.Object    `json:"objects"`
+	Objects  string `json:"objects"`
 	Phases   map[string]time.Time `json:"phases"`
 }
 
@@ -54,24 +53,24 @@ func NewIndex(path string, info os.FileInfo) (*Index, error) {
 	if err != nil {
 		return nil, err
 	}
-	pic := &Index{}
-	pic.Path = path
-	folder, _ := filepath.Split(pic.Path)
-	pic.Album = filepath.Base(folder)
-	pic.FileTime = info.ModTime()
-	pic.MimeType = mimemagic.Match("", sig)
-	if !MimeIs(pic.MimeType, Image, Video) {
-		return nil, errors.New(fmt.Sprintf("File '%s' is '%s' and not '%s' or '%s'", path, pic.MimeType, Image, Video))
+	idx := &Index{}
+	idx.Path = path
+	folder, _ := filepath.Split(idx.Path)
+	idx.Album = filepath.Base(folder)
+	idx.FileTime = info.ModTime()
+	idx.MimeType = mimemagic.Match("", sig)
+	if !MimeIs(idx.MimeType, Image, Video) {
+		return nil, errors.New(fmt.Sprintf("File '%s' is '%s' and not '%s' or '%s'", path, idx.MimeType, Image, Video))
 	}
-	err = pic.populateMD5(file)
+	err = idx.populateMD5(file)
 	if err != nil {
 		return nil, err
 	}
-	err = pic.populateExif(file)
+	err = idx.populateExif(file)
 	if err != nil {
 		tasklog.Error(err)
 	}
-	return pic, nil
+	return idx, nil
 }
 
 func (i *Index) Walk(name exif.FieldName, tag *tiff.Tag) error {

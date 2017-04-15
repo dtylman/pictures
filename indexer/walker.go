@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"fmt"
 	"github.com/jasonwinn/geocoder"
+	"log"
 )
 
 type Walker struct {
@@ -37,7 +38,7 @@ func (w*Walker) indexPictures() {
 		w.setRunning(false)
 		tasklog.Status(tasklog.IndexerTask, false, 0, 0, "Done")
 	}()
-	tasklog.Println("Starting index with options: ", w.options)
+	log.Println("Starting index with options: ", w.options)
 	if w.options.DeleteDatabase {
 		tasklog.StatusMessage(tasklog.IndexerTask, "Deleting existing database...")
 		err := w.deleteDB()
@@ -55,7 +56,7 @@ func (w*Walker) indexPictures() {
 	tasklog.StatusMessage(tasklog.IndexerTask, "Updating indicies...")
 	err := remover.Remove()
 	if err != nil {
-		tasklog.Println(err)
+		tasklog.Error(err)
 	}
 
 	imagePopulator := NewUpdater(w.options)
@@ -96,10 +97,9 @@ func (w*Walker) indexOne(path string, info os.FileInfo, e1 error) error {
 				AddError(path, err)
 				return nil
 			}
-			if !w.options.DeleteDatabase {
-				if db.HasImage(i.MD5) {
-					return nil
-				}
+			log.Println(i)
+			if db.HasImage(i.MD5) {
+				return nil
 			}
 			tasklog.StatusMessage(tasklog.IndexerTask, fmt.Sprintf("Indexing %s", i.Path))
 			err = db.Index(i)

@@ -1,7 +1,6 @@
 package remover
 
 import (
-	"fmt"
 	"github.com/dtylman/pictures/indexer/db"
 	"github.com/dtylman/pictures/indexer/picture"
 	"github.com/dtylman/pictures/tasklog"
@@ -23,12 +22,12 @@ func (s *scanner) checkImage(key string, image *picture.Index, err error) {
 		return
 	}
 	if image == nil {
-		tasklog.Println("error! image is null for ", key)
+		tasklog.ErrorF("error! image is null for %v", key)
 		return
 	}
 	_, err = os.Stat(image.Path)
 	if err != nil {
-		tasklog.Println(fmt.Sprintf("image: %v, error: %v", image.Path, err))
+		tasklog.ErrorF("image: %v, error: %v", image.Path, err)
 		s.itemsToRemove = append(s.itemsToRemove, image.MD5)
 	}
 }

@@ -7,12 +7,21 @@ import (
 	"github.com/dtylman/pictures/indexer/db"
 	"net/http"
 	_ "net/http/pprof"
+
+	lumberjack "gopkg.in/natefinch/lumberjack.v2"
+	"log"
 )
 
 func init() {
 	go func() {
 		http.ListenAndServe("localhost:6060", nil)
 	}()
+	log.SetOutput(&lumberjack.Logger{
+		Filename:   "bome.log",
+		MaxSize:    1, // megabytes
+		MaxBackups: 1,
+		MaxAge:     7, //days
+	})
 }
 
 func run() error {

@@ -1,10 +1,13 @@
 package tasklog
 
-import "sync"
+import (
+	"sync"
+)
 
 const (
 	IndexerTask = "Indexer"
 )
+
 type Task struct {
 	Name     string
 	Pos      int
@@ -48,6 +51,6 @@ func Status(taskName string, running bool, pos int, total int, messages ...strin
 	}
 }
 
-func StatusMessage(taskName string, messages...string){
-	Status(taskName,true,0,0,messages...)
+func StatusMessage(taskName string, messages...string) {
+	Status(taskName, true, 0, 0, messages...)
 }
