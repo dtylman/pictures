@@ -3,18 +3,20 @@ package view
 import (
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
+	"github.com/dtylman/pictures/indexer"
 )
 
 type main struct {
 	*gowd.Element
-	menu    *mainMenu
-	toolbar *gowd.Element
-	alerts  *gowd.Element
-	content *gowd.Element
+	menu     *mainMenu
+	toolbar  *gowd.Element
+	alerts   *gowd.Element
+	content  *gowd.Element
 
 	//views
-	search view
-	index  view
+	search   view
+	ןindexer view
+	indexing view
 }
 
 func newMain() *main {
@@ -41,8 +43,9 @@ func newMain() *main {
 	m.AddElement(m.content)
 
 	//views
-	m.index = newIndex()
 	m.search = newSearch()
+	m.ןindexer = newIndexerView()
+	m.indexing = newIndexingView()
 	// footer
 	return m
 }
@@ -52,7 +55,11 @@ func (m *main) btnSearchClick(*gowd.Element, *gowd.EventElement) {
 }
 
 func (m *main) btnIndexClick(sender *gowd.Element, e *gowd.EventElement) {
-	m.setActiveView(m.index)
+	if indexer.IsRunning() {
+		m.setActiveView(m.indexing)
+	} else {
+		m.setActiveView(m.ןindexer)
+	}
 }
 
 func (m *main) setActiveView(view view) {

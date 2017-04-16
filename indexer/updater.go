@@ -88,19 +88,20 @@ func (u*Updater) objects(dp*darknet.Process, image*picture.Index) error {
 	return nil
 }
 
-func (u*Updater) IsEmpty() bool {
+func (u*Updater) Length() int {
 	u.mutex.Lock()
 	defer u.mutex.Unlock()
-	return u.images.Length() == 0
+	return u.images.Length()
 }
 
-func (u*Updater) NextImage() *picture.Index {
+func (u*Updater) NextImage() (int, *picture.Index) {
 	u.mutex.Lock()
 	defer u.mutex.Unlock()
-	if u.images.Length() == 0 {
-		return nil
+	size := u.images.Length()
+	if size == 0 {
+		return 0, nil
 	}
-	return u.images.Remove().(*picture.Index)
+	return size, u.images.Remove().(*picture.Index)
 }
 
 func (u*Updater) getDarknessProcess(dp*darknet.Process) *darknet.Process {
@@ -118,7 +119,7 @@ func (u*Updater) getDarknessProcess(dp*darknet.Process) *darknet.Process {
 	return nil
 }
 
-func (u*Updater) worker(wg*sync.WaitGroup) {
+func (u*Updater) worker(wg*sync.WaitGroup, total int) {
 	defer wg.Done()
 	var dp *darknet.Process
 	var err error
@@ -128,8 +129,9 @@ func (u*Updater) worker(wg*sync.WaitGroup) {
 			dp.Close()
 		}
 	}()
-	i := u.NextImage()
+	left, i := u.NextImage()
 	for (i != nil) {
+		tasklog.Status(tasklog.IndexerTask, IsRunning(), total - left, total, fmt.Sprintf("Indexing %s", i.Path))
 		if !IsRunning() {
 			//indexer had stopped.
 			return
@@ -165,16 +167,17 @@ func (u*Updater) worker(wg*sync.WaitGroup) {
 		if err != nil {
 			tasklog.Error(err)
 		}
-		i = u.NextImage()
+		left, i = u.NextImage()
 	}
 }
 
 func (u*Updater) update() {
-	for !u.IsEmpty() {
+	total := u.Length()
+	for u.Length() > 0 {
 		waitGroup := new(sync.WaitGroup)
 		for i := 0; i < runtime.NumCPU(); i++ {
 			waitGroup.Add(1)
-			go u.worker(waitGroup)
+			go u.worker(waitGroup, total)
 		}
 		waitGroup.Wait()
 	}
