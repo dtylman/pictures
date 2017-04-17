@@ -17,7 +17,7 @@ func newSettingsView() *settingsView {
 	s.Element = gowd.NewElement("div")
 
 	s.btnSave = bootstrap.NewButton(bootstrap.ButtonPrimary, "Save")
-	s.btnSave.OnEvent(gowd.OnClick, s.btnSaveClick)
+	s.btnSave.OnEvent(gowd.OnClick, s.btnStartClick)
 
 	s.inputDataFolder = bootstrap.NewFormInput(bootstrap.InputTypeText, "Data folder")
 
@@ -41,7 +41,7 @@ func (sv *settingsView) getContent() *gowd.Element {
 	return sv.Element
 }
 
-func (sv *settingsView) btnSaveClick(sender *gowd.Element, event *gowd.EventElement) {
+func (sv *settingsView) btnStartClick(sender *gowd.Element, event *gowd.EventElement) {
 	conf.Options.DataFolder = sv.inputDataFolder.GetValue()
 	conf.Save()
 }

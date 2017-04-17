@@ -71,6 +71,12 @@ func Load() error {
 	if err != nil {
 		return err
 	}
+	if Options.DataFolder == "" {
+		Options.DataFolder, err = appUserFolder()
+		if err != nil {
+			return err
+		}
+	}
 	filesPath, err := FilesPath()
 	if err != nil {
 		return err

@@ -4,6 +4,7 @@ import (
 	"path"
 	"os"
 	"github.com/dtylman/pictures/conf"
+	"path/filepath"
 )
 
 //ImageFolder creates and returns a folder name for an image on the database.
@@ -17,7 +18,7 @@ func ImageFolder(md5 string) (string, error) {
 		// don't know what this is
 		return base, nil
 	}
-	folder := path.Join(base, md5[0:2], md5[2:size])
+	folder := filepath.Join(base, md5[0:2], md5[2:size])
 	err = os.MkdirAll(folder, 0755)
 	if err != nil {
 		return "", err

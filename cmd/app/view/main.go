@@ -17,6 +17,7 @@ type main struct {
 	search   view
 	indexer  view
 	indexing view
+	backup   view
 	settings view
 }
 
@@ -29,6 +30,7 @@ func newMain() *main {
 	m.menu = newMainMenu()
 	m.menu.btnSearch.OnEvent(gowd.OnClick, m.btnSearchClick)
 	m.menu.btnIndex.OnEvent(gowd.OnClick, m.btnIndexClick)
+	m.menu.btnBackup.OnEvent(gowd.OnClick, m.btnBackupClick)
 	m.menu.btnSettings.OnEvent(gowd.OnClick, m.btnSettingsClick)
 	m.AddElement(m.menu.Element)
 
@@ -48,6 +50,7 @@ func newMain() *main {
 	m.search = newSearch()
 	m.indexer = newIndexerView()
 	m.indexing = newIndexingView()
+	m.backup = newBackupView()
 	m.settings = newSettingsView()
 	// footer
 	return m
@@ -67,6 +70,10 @@ func (m *main) btnIndexClick(sender *gowd.Element, e *gowd.EventElement) {
 
 func (m *main) btnSettingsClick(*gowd.Element, *gowd.EventElement) {
 	m.setActiveView(m.settings)
+}
+
+func (m *main) btnBackupClick(*gowd.Element, *gowd.EventElement) {
+	m.setActiveView(m.backup)
 }
 
 func (m *main) setActiveView(view view) {

@@ -6,6 +6,7 @@ import (
 
 const (
 	IndexerTask = "Indexer"
+	BackuperTask = "Backuper"
 )
 
 type Task struct {
