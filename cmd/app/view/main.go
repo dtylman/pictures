@@ -17,6 +17,7 @@ type main struct {
 	search   view
 	indexer  view
 	indexing view
+	settings view
 }
 
 func newMain() *main {
@@ -28,6 +29,7 @@ func newMain() *main {
 	m.menu = newMainMenu()
 	m.menu.btnSearch.OnEvent(gowd.OnClick, m.btnSearchClick)
 	m.menu.btnIndex.OnEvent(gowd.OnClick, m.btnIndexClick)
+	m.menu.btnSettings.OnEvent(gowd.OnClick, m.btnSettingsClick)
 	m.AddElement(m.menu.Element)
 
 	m.toolbar = bootstrap.NewElement("div", "navbar btn-toolbar")
@@ -46,6 +48,7 @@ func newMain() *main {
 	m.search = newSearch()
 	m.indexer = newIndexerView()
 	m.indexing = newIndexingView()
+	m.settings = newSettingsView()
 	// footer
 	return m
 }
@@ -60,6 +63,10 @@ func (m *main) btnIndexClick(sender *gowd.Element, e *gowd.EventElement) {
 	} else {
 		m.setActiveView(m.indexer)
 	}
+}
+
+func (m *main) btnSettingsClick(*gowd.Element, *gowd.EventElement) {
+	m.setActiveView(m.settings)
 }
 
 func (m *main) setActiveView(view view) {

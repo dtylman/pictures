@@ -33,6 +33,8 @@ var Options struct {
 	IdleSeconds    uint `json:"idle_seconds"`
 	//DarknetTimeout, in seconds for wait to allow darknet to scan for objects.
 	DarknetTimeout uint `json:"darknet_timeout"`
+	//DataFolder is the database folder
+	DataFolder     string `json:"db_folder"`
 }
 
 func init() {
@@ -42,19 +44,16 @@ func init() {
 	Options.ThumbY = 200
 	Options.IdleSeconds = 5
 	Options.DarknetTimeout = 70
-	thumbPath, err := FilesPath()
+	appUserFolder, err := appUserFolder()
 	if err != nil {
 		panic(err)
 	}
-	err = os.MkdirAll(thumbPath, 0755)
-	if err != nil {
-		panic(err)
-	}
+	Options.DataFolder = appUserFolder
 }
 
 //Load loads conf for the current user
 func Load() error {
-	confFileName, err := getPathForFile(defaultConfFileName)
+	confFileName, err := getFileFromUserFolder(defaultConfFileName)
 	if err != nil {
 		return err
 	}
@@ -68,21 +67,15 @@ func Load() error {
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal(data, &Options)
-}
-
-func getPathForFile(fileName string) (string, error) {
-	cuser, err := user.Current()
+	err = json.Unmarshal(data, &Options)
 	if err != nil {
-		return "", err
+		return err
 	}
-	appFolder := filepath.Join(cuser.HomeDir, ".pictures")
-	err = os.MkdirAll(appFolder, 0755)
+	filesPath, err := FilesPath()
 	if err != nil {
-		return "", err
+		return err
 	}
-	confFileName := filepath.Join(appFolder, fileName)
-	return confFileName, err
+	return os.MkdirAll(filesPath, 0755)
 }
 
 func Save() error {
@@ -90,7 +83,7 @@ func Save() error {
 	if err != nil {
 		return err
 	}
-	confFileName, err := getPathForFile(defaultConfFileName)
+	confFileName, err := getFileFromUserFolder(defaultConfFileName)
 	if err != nil {
 		return err
 	}
@@ -117,17 +110,48 @@ func AddSourceFolder(path string) {
 	Options.SourceFolders = append(Options.SourceFolders, path)
 }
 
+//appUserFolder returns the app folder under the user account ~/danny/.pictures
+func appUserFolder() (string, error) {
+	cuser, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+	appFolder := filepath.Join(cuser.HomeDir, ".pictures")
+	err = os.MkdirAll(appFolder, 0755)
+	if err != nil {
+		return "", err
+	}
+	return appFolder, nil
+}
+
+func getFileFromUserFolder(fileName string) (string, error) {
+	appFolder, err := appUserFolder()
+	if err != nil {
+		return "", err
+	}
+	userFileName := filepath.Join(appFolder, fileName)
+	return userFileName, nil
+}
+
+func getFileFromDataFolder(fileName string) (string, error) {
+	err := os.MkdirAll(Options.DataFolder, 0755)
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(Options.DataFolder, fileName), nil
+}
+
 //BlevePath returns bleve path
 func BlevePath() (string, error) {
-	return getPathForFile(defaultBleveFolder)
+	return getFileFromDataFolder(defaultBleveFolder)
 }
 
 //BoltPath bold db file path
 func BoltPath() (string, error) {
-	return getPathForFile(defaultBoltFileName)
+	return getFileFromDataFolder(defaultBoltFileName)
 }
 
 //FilesPath is the place where files are stored.
 func FilesPath() (string, error) {
-	return getPathForFile(defaultFilesPath)
+	return getFileFromDataFolder(defaultFilesPath)
 }
