@@ -38,18 +38,16 @@ func newIndexingView() *indexingView {
 
 func (iv *indexingView) btnStopClicked(sender *gowd.Element, event *gowd.EventElement) {
 	indexer.Stop()
-	iv.updateState()
+	iv.btnStop.Disable()
 }
 
 func (iv *indexingView) updateState() {
 	if !indexer.IsRunning() {
-		Root.setActiveView(Root.ןindexer)
-		return
-	}
-	if indexer.IsRunning() {
-		iv.btnStop.Enable()
+		iv.progressBar.SetText("")
+		iv.progressBar.SetValue(0, 0)
+		Root.setActiveView(Root.indexer)
 	} else {
-		iv.btnStop.Disable()
+		iv.btnStop.Enable()
 	}
 }
 
@@ -59,7 +57,9 @@ func (iv *indexingView) populateToolbar(toolbar *gowd.Element) {
 
 func (iv *indexingView) updateIndexerProgress(status tasklog.Task) {
 	if !status.Running {
-		iv.updateState()
+		iv.progressBar.SetText("")
+		iv.progressBar.SetValue(0, 0)
+		Root.setActiveView(Root.indexer)
 	} else {
 		iv.pnlStatus.Body.RemoveElements()
 		for _, msg := range status.Messages {
@@ -69,8 +69,8 @@ func (iv *indexingView) updateIndexerProgress(status tasklog.Task) {
 			iv.progressBar.SetText(fmt.Sprintf("%d / %d", status.Pos, status.Total))
 			iv.progressBar.SetValue(status.Pos, status.Total)
 		}
+		Root.Render()
 	}
-	Root.Render()
 }
 
 func (iv *indexingView) getContent() *gowd.Element {

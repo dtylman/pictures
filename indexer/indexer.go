@@ -1,47 +1,123 @@
 package indexer
 
 import (
-	"github.com/rwcarlsen/goexif/exif"
-	"github.com/rwcarlsen/goexif/mknote"
+	"sync"
+	"github.com/dtylman/pictures/tasklog"
+	"github.com/dtylman/pictures/indexer/remover"
+	"github.com/dtylman/pictures/conf"
 	"os"
-	"github.com/dtylman/pictures/indexer/darknet"
+	"errors"
+	"github.com/dtylman/pictures/indexer/db"
+	"path/filepath"
+	"fmt"
 	"log"
+	"github.com/dtylman/pictures/indexer/picture"
 )
 
-func init() {
-	exif.RegisterParsers(mknote.All...)
-	darknet.DarknetHome, _ = os.Getwd()
+type Indexer struct {
+	options Options
+	running bool
+	mutex   sync.Mutex
+	images  *picture.Queue
 }
 
-type Options struct {
-	//IndexLocation if true will do include geolocation
-	WithLocation   bool
-	//DeleteDatabase if true will delete previous results
-	DeleteDatabase bool
-	//WithObjects if true will include objects
-	WithObjects    bool
-	//With faces if true will include faces
-	WithFaces      bool
+func (i*Indexer) isRunning() bool {
+	i.mutex.Lock()
+	defer i.mutex.Unlock()
+	return i.running
 }
 
-var (
-	walker Walker
-)
-
-func IsRunning() bool {
-	return walker.isRunning()
+func (i*Indexer) setRunning(value bool) {
+	i.mutex.Lock()
+	defer i.mutex.Unlock()
+	i.running = value
+	go tasklog.Status(tasklog.IndexerTask, false, 0, 0, "Done")
 }
 
-//Stop stops the indexer
-func Stop() {
-	walker.setRunning(false)
+func (i*Indexer) indexPictures() {
+	defer func() {
+		i.setRunning(false)
+	}()
+	log.Println("Starting index with options: ", i.options)
+	if i.options.DeleteDatabase {
+		tasklog.StatusMessage(tasklog.IndexerTask, "Deleting existing database...")
+		err := i.deleteDB()
+		if err != nil {
+			tasklog.StatusMessage(tasklog.IndexerTask, err.Error())
+		}
+	}
+	tasklog.StatusMessage(tasklog.IndexerTask, "Counting files...")
+	for _, folder := range conf.Options.SourceFolders {
+		err := filepath.Walk(folder, i.processFile)
+		if err != nil {
+			AddError(folder, err)
+		}
+	}
+	tasklog.StatusMessage(tasklog.IndexerTask, fmt.Sprintf("Saving %d new itesm...", i.images.Length()))
+	err := db.BatchIndex(i.images.Items())
+	if err != nil {
+		tasklog.Error(err)
+	}
+	tasklog.StatusMessage(tasklog.IndexerTask, "Checking for missing files...")
+	err = remover.Remove()
+	if err != nil {
+		tasklog.Error(err)
+	}
+
+	imagePopulator := newProcessor(i.options)
+	imagePopulator.update()
+
 }
 
-//Start starts the indexer
-func Start(options Options) error {
-	return walker.start(options)
+func (w*Indexer) start(options Options) error {
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
+	if w.running {
+		return errors.New("Already running")
+	}
+	w.running = true
+	w.options = options
+	w.images = picture.NewQueue()
+	if w.options.WithLocation {
+		if conf.Options.MapQuestAPIKey == "" {
+			return errors.New("API KEY for map quest is empty")
+		}
+	}
+	go indexer.indexPictures()
+	return nil
 }
 
-func AddError(path string, err error) {
-	log.Printf("%s: %s", path, err.Error())
+func (w*Indexer) processFile(path string, info os.FileInfo, e1 error) error {
+	if e1 != nil {
+		AddError(path, e1)
+		return nil
+	}
+	if !IsRunning() {
+		return errors.New("Indexer had stopped")
+	}
+	if info.IsDir() {
+		tasklog.StatusMessage(tasklog.IndexerTask, fmt.Sprintf("Scanning folder '%s'", path))
+	} else {
+		if info.Size() > 0 {
+			i, err := picture.NewIndex(path, info)
+			if err != nil {
+				AddError(path, err)
+				return nil
+			}
+			log.Println(i)
+			if db.HasImage(i.MD5) {
+				return nil
+			}
+			w.images.PushBack(i)
+		}
+	}
+	return nil
+}
+
+func (w*Indexer) deleteDB() error {
+	err := db.DeleteDatabase()
+	if err != nil {
+		return err
+	}
+	return db.Open()
 }

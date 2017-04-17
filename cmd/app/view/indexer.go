@@ -84,12 +84,6 @@ func (i *indexerView) updateState() {
 		i.SourceFolders.AddElement(NewSourceFolder(path, i.btnSourceFolderDelete))
 	}
 	i.inputMapQuest.SetValue(conf.Options.MapQuestAPIKey)
-	if indexer.IsRunning() {
-		i.btnStart.Disable()
-	} else {
-		i.btnStart.Enable()
-	}
-
 }
 
 func (i *indexerView) btnSourceFolderDelete(sender *gowd.Element, event *gowd.EventElement) {

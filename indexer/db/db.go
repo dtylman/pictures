@@ -7,6 +7,29 @@ import (
 	"github.com/dtylman/pictures/indexer/picture"
 )
 
+func BatchIndex(pictures []*picture.Index) error {
+	b := idx.NewBatch()
+	for _, picture := range pictures {
+		err := b.Index(picture.MD5, picture)
+		if err != nil {
+			return err
+		}
+	}
+	return bdb.Update(func(tx *bolt.Tx) error {
+		for _, picture := range pictures {
+			data, err := json.Marshal(picture)
+			if err != nil {
+				return err
+			}
+			err = tx.Bucket(imagesBucket).Put([]byte(picture.MD5), data)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
 //Index saves one picture into the database
 func Index(picture *picture.Index) error {
 	err := idx.Index(picture.MD5, picture)

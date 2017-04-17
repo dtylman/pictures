@@ -15,7 +15,7 @@ type main struct {
 
 	//views
 	search   view
-	ןindexer view
+	indexer  view
 	indexing view
 }
 
@@ -44,7 +44,7 @@ func newMain() *main {
 
 	//views
 	m.search = newSearch()
-	m.ןindexer = newIndexerView()
+	m.indexer = newIndexerView()
 	m.indexing = newIndexingView()
 	// footer
 	return m
@@ -58,7 +58,7 @@ func (m *main) btnIndexClick(sender *gowd.Element, e *gowd.EventElement) {
 	if indexer.IsRunning() {
 		m.setActiveView(m.indexing)
 	} else {
-		m.setActiveView(m.ןindexer)
+		m.setActiveView(m.indexer)
 	}
 }
 
