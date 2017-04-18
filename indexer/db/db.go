@@ -16,6 +16,10 @@ func BatchIndex(pictures []*picture.Index) error {
 			return err
 		}
 	}
+	err := idx.Batch(b)
+	if err != nil {
+		return err
+	}
 	return bdb.Update(func(tx *bolt.Tx) error {
 		for _, picture := range pictures {
 			data, err := json.Marshal(picture)
