@@ -5,6 +5,7 @@ import (
 	"github.com/blevesearch/bleve"
 	"github.com/boltdb/bolt"
 	"github.com/dtylman/pictures/indexer/picture"
+	"fmt"
 )
 
 func BatchIndex(pictures []*picture.Index) error {
@@ -48,6 +49,16 @@ func Index(picture *picture.Index) error {
 //Search performs bleve search on the pictures index
 func Search(req *bleve.SearchRequest) (*bleve.SearchResult, error) {
 	return idx.Search(req)
+}
+
+//HasPath returns true if a path exists in the database
+func HasPath(path string) (bool, error) {
+	q := bleve.NewTermQuery(fmt.Sprintf("path: %s", path))
+	sr, err := idx.Search(bleve.NewSearchRequestOptions(q, 1, 0, false))
+	if err != nil {
+		return false, err
+	}
+	return sr.Hits.Len() > 0, nil
 }
 
 //HasImage returns tue if image wiith ID exists

@@ -69,8 +69,8 @@ func (iv *indexingView) updateIndexerProgress(status tasklog.Task) {
 			iv.progressBar.SetText(fmt.Sprintf("%d / %d", status.Pos, status.Total))
 			iv.progressBar.SetValue(status.Pos, status.Total)
 		}
-		Root.Render()
 	}
+	Root.Render()
 }
 
 func (iv *indexingView) getContent() *gowd.Element {

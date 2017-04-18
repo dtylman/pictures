@@ -31,12 +31,13 @@ func (i*Indexer) setRunning(value bool) {
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
 	i.running = value
-	go tasklog.Status(tasklog.IndexerTask, false, 0, 0, "Done")
+
 }
 
 func (i*Indexer) indexPictures() {
 	defer func() {
 		i.setRunning(false)
+		tasklog.Status(tasklog.IndexerTask, false, 0, 0, "Done")
 	}()
 	log.Println("Starting index with options: ", i.options)
 	if i.options.DeleteDatabase {
@@ -64,8 +65,8 @@ func (i*Indexer) indexPictures() {
 		tasklog.Error(err)
 	}
 
-	imagePopulator := newProcessor(i.options)
-	imagePopulator.update()
+	imageProcessor := newProcessor(i.options)
+	imageProcessor.update()
 
 }
 
@@ -96,15 +97,23 @@ func (w*Indexer) processFile(path string, info os.FileInfo, e1 error) error {
 		return errors.New("Indexer had stopped")
 	}
 	if info.IsDir() {
-		tasklog.StatusMessage(tasklog.IndexerTask, fmt.Sprintf("Scanning folder '%s'", path))
+		tasklog.StatusMessage(tasklog.IndexerTask, fmt.Sprintf("Scanning folder '%s' (%d new images found)", path, w.images.Length()))
 	} else {
 		if info.Size() > 0 {
+			if w.options.QuickScan {
+				exists, err := db.HasPath(path)
+				if err != nil {
+					return err
+				}
+				if exists {
+					return nil
+				}
+			}
 			i, err := picture.NewIndex(path, info)
 			if err != nil {
 				AddError(path, err)
 				return nil
 			}
-			log.Println(i)
 			if db.HasImage(i.MD5) {
 				return nil
 			}

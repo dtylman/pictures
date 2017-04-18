@@ -12,6 +12,7 @@ import (
 	"github.com/dtylman/pictures/indexer/location"
 	"github.com/jasonwinn/geocoder"
 	"github.com/dtylman/pictures/conf"
+	"reflect"
 )
 
 type Processor struct {
@@ -58,24 +59,28 @@ func (p*Processor) worker(wg*sync.WaitGroup, total int) {
 			dp.Close()
 		}
 	}()
-	left, i := p.images.Pop()
-	for (i != nil) {
-		tasklog.Status(tasklog.IndexerTask, IsRunning(), total - left, total, fmt.Sprintf("Indexing %s", i.Path))
+	left, image := p.images.Pop()
+	for (image != nil) {
+		imageBefore := *image
 		for _, processor := range p.processors {
 			if !IsRunning() {
 				//indexer had stopped.
 				return
 			}
-			err = processor.Process(i)
+			err = processor.Process(image)
 			if err != nil {
 				tasklog.Error(err)
 			}
 		}
-		err = db.Index(i)
-		if err != nil {
-			tasklog.Error(err)
+		//save image if it was changed by a processor
+		if !reflect.DeepEqual(imageBefore, *image) {
+			tasklog.Status(tasklog.IndexerTask, IsRunning(), total - left, total, fmt.Sprintf("Indexing %s", image.Path))
+			err = db.Index(image)
+			if err != nil {
+				tasklog.Error(err)
+			}
 		}
-		left, i = p.images.Pop()
+		left, image = p.images.Pop()
 	}
 }
 

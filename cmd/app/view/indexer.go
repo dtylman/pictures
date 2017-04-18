@@ -18,6 +18,7 @@ type indexerView struct {
 	chkDeleteDB   *bootstrap.Checkbox
 	chkWithFaces  *bootstrap.Checkbox
 	chkWithObjs   *bootstrap.Checkbox
+	chkQuicksacn  *bootstrap.Checkbox
 	inputMapQuest *bootstrap.FormInput
 	SourceFolders *gowd.Element
 }
@@ -26,6 +27,7 @@ func newIndexerView() *indexerView {
 	i := new(indexerView)
 	i.Element = gowd.NewElement("div")
 
+	i.chkQuicksacn = bootstrap.NewCheckBox("Quick Scan", false)
 	i.chkLocation = bootstrap.NewCheckBox("With Locations", false)
 	i.chkWithObjs = bootstrap.NewCheckBox("With Objects", true)
 	i.chkWithFaces = bootstrap.NewCheckBox("With Faces", true)
@@ -46,6 +48,7 @@ func newIndexerView() *indexerView {
 
 	pnl := bootstrap.NewPanel(bootstrap.PanelDefault)
 	pnl.AddTitle("Indexing Options:")
+	pnl.AddToBody(i.chkQuicksacn.Element)
 	pnl.AddToBody(i.chkLocation.Element)
 	pnl.AddToBody(i.chkWithObjs.Element)
 	pnl.AddToBody(i.chkWithFaces.Element)
@@ -98,6 +101,7 @@ func (i *indexerView) btnStartClicked(sender *gowd.Element, event *gowd.EventEle
 		DeleteDatabase:         i.chkDeleteDB.Checked(),
 		WithFaces: i.chkWithFaces.Checked(),
 		WithObjects: i.chkWithObjs.Checked(),
+		QuickScan: i.chkQuicksacn.Checked(),
 	})
 	if err != nil {
 		Root.addAlertError(err)

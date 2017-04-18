@@ -22,6 +22,8 @@ type Options struct {
 	WithObjects    bool
 	//With faces if true will include faces
 	WithFaces      bool
+	//QuickScan if true, will only compare file name when looking at image
+	QuickScan      bool
 }
 
 var (
