@@ -1,17 +1,18 @@
 package indexer
 
 import (
-	"sync"
-	"github.com/dtylman/pictures/tasklog"
-	"github.com/dtylman/pictures/indexer/remover"
-	"github.com/dtylman/pictures/conf"
-	"os"
 	"errors"
-	"github.com/dtylman/pictures/indexer/db"
-	"path/filepath"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
+	"sync"
+
+	"github.com/dtylman/pictures/conf"
+	"github.com/dtylman/pictures/indexer/db"
 	"github.com/dtylman/pictures/indexer/picture"
+	"github.com/dtylman/pictures/indexer/remover"
+	"github.com/dtylman/pictures/tasklog"
 )
 
 type Indexer struct {
@@ -21,20 +22,20 @@ type Indexer struct {
 	images  *picture.Queue
 }
 
-func (i*Indexer) isRunning() bool {
+func (i *Indexer) isRunning() bool {
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
 	return i.running
 }
 
-func (i*Indexer) setRunning(value bool) {
+func (i *Indexer) setRunning(value bool) {
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
 	i.running = value
 
 }
 
-func (i*Indexer) indexPictures() {
+func (i *Indexer) indexPictures() {
 	defer func() {
 		i.setRunning(false)
 		tasklog.Status(tasklog.IndexerTask, false, 0, 0, "Done")
@@ -54,13 +55,10 @@ func (i*Indexer) indexPictures() {
 			AddError(folder, err)
 		}
 	}
-	tasklog.StatusMessage(tasklog.IndexerTask, fmt.Sprintf("Saving %d new itesm...", i.images.Length()))
-	err := db.BatchIndex(i.images.Items())
-	if err != nil {
-		tasklog.Error(err)
-	}
+	tasklog.StatusMessage(tasklog.IndexerTask, fmt.Sprintf("Saving %d new items...", i.images.Length()))
+	db.BatchIndex(i.images)
 	tasklog.StatusMessage(tasklog.IndexerTask, "Checking for missing files...")
-	err = remover.Remove()
+	err := remover.Remove()
 	if err != nil {
 		tasklog.Error(err)
 	}
@@ -70,7 +68,7 @@ func (i*Indexer) indexPictures() {
 
 }
 
-func (w*Indexer) start(options Options) error {
+func (w *Indexer) start(options Options) error {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
 	if w.running {
@@ -88,7 +86,7 @@ func (w*Indexer) start(options Options) error {
 	return nil
 }
 
-func (w*Indexer) processFile(path string, info os.FileInfo, e1 error) error {
+func (w *Indexer) processFile(path string, info os.FileInfo, e1 error) error {
 	if e1 != nil {
 		AddError(path, e1)
 		return nil
@@ -123,7 +121,7 @@ func (w*Indexer) processFile(path string, info os.FileInfo, e1 error) error {
 	return nil
 }
 
-func (w*Indexer) deleteDB() error {
+func (w *Indexer) deleteDB() error {
 	err := db.DeleteDatabase()
 	if err != nil {
 		return err

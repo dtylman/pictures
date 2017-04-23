@@ -1,15 +1,19 @@
 package main
 
 import (
+	"net/http"
+	_ "net/http/pprof"
+
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/pictures/cmd/app/view"
 	"github.com/dtylman/pictures/conf"
 	"github.com/dtylman/pictures/indexer/db"
-	"net/http"
-	_ "net/http/pprof"
+
+	"log"
+
+	"runtime"
 
 	lumberjack "gopkg.in/natefinch/lumberjack.v2"
-	"log"
 )
 
 func init() {
@@ -22,6 +26,7 @@ func init() {
 		MaxBackups: 1,
 		MaxAge:     7, //days
 	})
+	runtime.GOMAXPROCS(runtime.NumCPU())
 }
 
 func run() error {

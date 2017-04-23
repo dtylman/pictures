@@ -1,13 +1,14 @@
 package indexer
 
 import (
-	"github.com/dtylman/pictures/indexer/picture"
-	"github.com/dtylman/pictures/indexer/db"
 	"time"
+
+	"github.com/dtylman/pictures/indexer/db"
+	"github.com/dtylman/pictures/indexer/picture"
 )
 
 type processorBatch struct {
-	images     []*picture.Index
+	images     *picture.Queue
 	commitTime time.Time
 }
 
@@ -17,24 +18,19 @@ func newProcessorBatch() *processorBatch {
 	return pb
 }
 
-func (pb*processorBatch) reset() {
-	pb.images = make([]*picture.Index, 0)
+func (pb *processorBatch) reset() {
+	pb.images = picture.NewQueue()
 	pb.commitTime = time.Now()
 }
 
-func (pb*processorBatch) add(image *picture.Index) error {
-	pb.images = append(pb.images, image)
-	if time.Since(pb.commitTime) > time.Second * 150 {
-		return pb.commit()
+func (pb *processorBatch) add(image *picture.Index) {
+	pb.images.PushBack(image)
+	if time.Since(pb.commitTime) > time.Second*150 {
+		pb.commit()
 	}
-	return nil
 }
 
-func (pb*processorBatch) commit() error {
-	err := db.BatchIndex(pb.images)
-	if err != nil {
-		return err
-	}
+func (pb *processorBatch) commit() {
+	db.BatchIndex(pb.images)
 	pb.reset()
-	return nil
 }

@@ -1,14 +1,16 @@
 package db
 
 import (
+	"os"
+
 	"github.com/blevesearch/bleve"
+	"github.com/blevesearch/bleve/mapping"
 	"github.com/boltdb/bolt"
 	"github.com/dtylman/pictures/conf"
-	"os"
 )
 
 var (
-	idx bleve.Index
+	idx          bleve.Index
 	bdb          *bolt.DB
 	imagesBucket = []byte("images")
 )
@@ -21,7 +23,7 @@ func openBleve() error {
 	_, err = os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			mapping := bleve.NewIndexMapping()
+			mapping := bleveMapping()
 			err = mapping.Validate()
 			if err != nil {
 				return err
@@ -30,11 +32,17 @@ func openBleve() error {
 			if err != nil {
 				return err
 			}
+
 			return nil
 		}
 	}
 	idx, err = bleve.Open(path)
 	return err
+}
+
+func bleveMapping() mapping.IndexMapping {
+	mapping := bleve.NewIndexMapping()
+	return mapping
 }
 
 func openBolt() error {
@@ -67,6 +75,7 @@ func Close() {
 	bdb.Close()
 }
 
+//DeleteDatabase removes the database and all data
 func DeleteDatabase() error {
 	err := idx.Close()
 	if err != nil {

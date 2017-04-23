@@ -2,38 +2,12 @@ package db
 
 import (
 	"encoding/json"
+	"fmt"
+
 	"github.com/blevesearch/bleve"
 	"github.com/boltdb/bolt"
 	"github.com/dtylman/pictures/indexer/picture"
-	"fmt"
 )
-
-func BatchIndex(pictures []*picture.Index) error {
-	b := idx.NewBatch()
-	for _, picture := range pictures {
-		err := b.Index(picture.MD5, picture)
-		if err != nil {
-			return err
-		}
-	}
-	err := idx.Batch(b)
-	if err != nil {
-		return err
-	}
-	return bdb.Update(func(tx *bolt.Tx) error {
-		for _, picture := range pictures {
-			data, err := json.Marshal(picture)
-			if err != nil {
-				return err
-			}
-			err = tx.Bucket(imagesBucket).Put([]byte(picture.MD5), data)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-}
 
 //Index saves one picture into the database
 func Index(picture *picture.Index) error {
@@ -76,6 +50,7 @@ func HasImage(imageID string) bool {
 	return exists
 }
 
+//WalkImagesFunc defines a callback to scan alll images in database (use with WalkImages)
 type WalkImagesFunc func(key string, image *picture.Index, err error)
 
 //WalkImages executes function for all images in the database
