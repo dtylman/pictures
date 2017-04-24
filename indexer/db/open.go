@@ -7,13 +7,57 @@ import (
 	"github.com/blevesearch/bleve/mapping"
 	"github.com/boltdb/bolt"
 	"github.com/dtylman/pictures/conf"
+
+	_ "github.com/mattn/go-sqlite3"
+	"database/sql"
+	"log"
 )
 
 var (
-	idx          bleve.Index
+	idx bleve.Index
 	bdb          *bolt.DB
+	sqldb *sql.DB
 	imagesBucket = []byte("images")
 )
+
+func openSQlite() error {
+	path, err := conf.SqlitePath()
+	if err != nil {
+		return err
+	}
+
+	sqldb, err = sql.Open("sqlite3", path)
+	if err != nil {
+		return err
+	}
+	_, err = os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			err = createSchema()
+			if err != nil {
+				return nil
+			}
+		}
+	}
+	//setup session
+	_, err = sqldb.Exec(`PRAGMA synchronous=OFF`)
+	if err != nil {
+		return err
+	}
+	_, err = sqldb.Exec(`PRAGMA count_changes=OFF`)
+	if err != nil {
+		return err
+	}
+	_, err = sqldb.Exec(`PRAGMA journal_mode=MEMORY`)
+	if err != nil {
+		return err
+	}
+	_, err = sqldb.Exec(`PRAGMA temp_store=MEMORY`)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 func openBleve() error {
 	path, err := conf.BlevePath()
@@ -66,13 +110,27 @@ func Open() error {
 	if err != nil {
 		return err
 	}
+	err = openSQlite()
+	if err != nil {
+		return err
+	}
 	return openBolt()
 }
 
 //Close closes the db
 func Close() {
-	idx.Close()
-	bdb.Close()
+	err := idx.Close()
+	if err != nil {
+		log.Println(err)
+	}
+	err = bdb.Close()
+	if err != nil {
+		log.Println(err)
+	}
+	err = sqldb.Close()
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 //DeleteDatabase removes the database and all data

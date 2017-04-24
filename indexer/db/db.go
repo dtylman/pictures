@@ -10,7 +10,7 @@ import (
 )
 
 //Index saves one picture into the database
-func Index(picture *picture.Index) error {
+func Index1(picture *picture.Index) error {
 	err := idx.Index(picture.MD5, picture)
 	if err != nil {
 		return err

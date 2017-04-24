@@ -66,7 +66,7 @@ func shardWorker(wg *sync.WaitGroup, images *picture.Queue) {
 }
 
 //BatchIndex updates batch of pictures
-func BatchIndex(images *picture.Queue) {
+func BatchIndex1(images *picture.Queue) {
 	var wg sync.WaitGroup
 	for i := 0; i < runtime.NumCPU(); i++ {
 		wg.Add(1)
