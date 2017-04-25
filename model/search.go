@@ -60,7 +60,7 @@ func NewSearch(queryString string, query query.Query) (*Search, error) {
 	s.query = query
 	s.QueryString = queryString
 	s.start = 0
-	s.doQuery()
+	//s.doQuery()
 	return s, nil
 }
 

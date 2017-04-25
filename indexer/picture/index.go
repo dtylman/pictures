@@ -20,26 +20,21 @@ import (
 const (
 	Video = "video"
 	Image = "image"
-
-	PhaseThumb = "thumb"
-	PhaseLocation = "location"
-	PhaseObjects = "objects"
-	PhaseFaces = "faces"
 )
 
 type Index struct {
-	MD5      string    `json:"md5"`
-	MimeType string    `json:"mime_type"`
-	Path     string    `json:"path"`
-	FileTime time.Time `json:"file_time"`
-	Taken    time.Time `json:"taken"`
-	Exif     string    `json:"exif"`
-	Lat      float64   `json:"lat"`
-	Long     float64   `json:"long"`
-	Location string    `json:"location"`
-	Album    string    `json:"album"`
-	Objects  string `json:"objects"`
-	Phases   map[string]time.Time `json:"phases"`
+	MD5      string
+	MimeType string
+	Path     string
+	FileTime time.Time
+	Taken    time.Time
+	Lat      float64
+	Long     float64
+	Location string
+	Album    string
+	Objects  string
+	Faces    string
+	Exif     map[string]string
 }
 
 func NewIndex(path string, info os.FileInfo) (*Index, error) {
@@ -74,7 +69,7 @@ func NewIndex(path string, info os.FileInfo) (*Index, error) {
 }
 
 func (i *Index) Walk(name exif.FieldName, tag *tiff.Tag) error {
-	i.Exif += fmt.Sprintf("%s: %s ", name, tag.String())
+	i.Exif[string(name)] = tag.String()
 	return nil
 }
 
@@ -87,7 +82,7 @@ func (i *Index) populateExif(file *os.File) error {
 	if err != nil {
 		return err
 	}
-	i.Exif = ""
+	i.Exif = make(map[string]string)
 	err = x.Walk(i)
 	if err != nil {
 		tasklog.Error(err)
@@ -117,21 +112,9 @@ func (i *Index) populateMD5(file *os.File) error {
 	return nil
 }
 
-func (i*Index) HasPhase(name string) bool {
-	if i.Phases == nil {
-		return false
-	}
-	_, exists := i.Phases[name]
-	return exists
+func (i*Index) ExifString() string {
+	return fmt.Sprintf("%v", i.Exif)
 }
-
-func (i*Index) SetPhase(name string) {
-	if i.Phases == nil {
-		i.Phases = make(map[string]time.Time)
-	}
-	i.Phases[name] = time.Now()
-}
-
 //MimeIs return true if mime type is one of the provided array
 func MimeIs(mimeType string, pictureType ...string) bool {
 	base := strings.Split(mimeType, "/")[0]
