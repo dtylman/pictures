@@ -56,8 +56,8 @@ func (bv *backupView) updateState() {
 }
 
 func (bv *backupView) populateToolbar(toolbar *gowd.Element) {
-	toolbar.AddElement(bv.btnStart)
-	toolbar.AddElement(bv.btnStop)
+	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 1, bv.btnStart))
+	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 1, bv.btnStop))
 }
 
 func (bv *backupView) getContent() *gowd.Element {

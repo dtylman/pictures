@@ -30,10 +30,10 @@ type Index struct {
 	Taken    time.Time
 	Lat      float64
 	Long     float64
-	Location string
-	Album    string
-	Objects  string
-	Faces    string
+	Location string `json:"location"`
+	Album    string `json:"album"`
+	Objects  string `json:"objects"`
+	Faces    string `json:"faces"`
 	Exif     map[string]string
 }
 

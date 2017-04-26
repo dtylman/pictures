@@ -34,7 +34,7 @@ func (sv *settingsView) updateState() {
 }
 
 func (sv *settingsView) populateToolbar(toolbar *gowd.Element) {
-	toolbar.AddElement(sv.btnSave)
+	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 1, sv.btnSave))
 }
 
 func (sv *settingsView) getContent() *gowd.Element {

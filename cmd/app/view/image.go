@@ -25,12 +25,12 @@ func newImage(activeSearch *model.Search) *image {
 
 func (i *image) populateToolbar(toolbar *gowd.Element) {
 	btnPrev := bootstrap.NewButton(bootstrap.ButtonDefault, "Prev")
-	btnPrev.OnEvent(gowd.OnClick, i.btnNextClicked)
-	toolbar.AddElement(btnPrev)
+	btnPrev.OnEvent(gowd.OnClick, i.btnPrevClicked)
+	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 1, btnPrev))
 
 	btnNext := bootstrap.NewButton(bootstrap.ButtonDefault, "Next")
 	btnNext.OnEvent(gowd.OnClick, i.btnNextClicked)
-	toolbar.AddElement(btnNext)
+	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 1, btnNext))
 
 }
 
@@ -63,13 +63,13 @@ func (i *image) updateState() {
 
 	}
 
-	table := bootstrap.QuickTable("", i.activeSearch.ActiveImage.Details)
+	table := bootstrap.NewTable(bootstrap.TableStripped)
 	col = bootstrap.NewColumn(bootstrap.ColumnLarge, 3)
 	col.AddElement(table.Element)
 	row.AddElement(col)
 
 	pnl := bootstrap.NewPanel(bootstrap.PanelDefault)
-	pnl.AddTitle(i.activeSearch.ActiveImage.Name)
+	pnl.AddTitle(i.activeSearch.ActiveImage.Path)
 	pnl.AddToBody(row)
 
 	i.AddElement(pnl.Element)

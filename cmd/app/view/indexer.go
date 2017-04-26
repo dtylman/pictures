@@ -74,7 +74,7 @@ func (i *indexerView) getContent() *gowd.Element {
 }
 
 func (i *indexerView) populateToolbar(toolbar *gowd.Element) {
-	toolbar.AddElement(i.btnStart)
+	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 1, i.btnStart))
 }
 
 func (i *indexerView) updateState() {

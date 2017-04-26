@@ -2,8 +2,6 @@ package view
 
 import (
 	"fmt"
-	"github.com/blevesearch/bleve"
-	"github.com/blevesearch/bleve/search/query"
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
 	"github.com/dtylman/pictures/model"
@@ -25,11 +23,17 @@ func newSearch() *search {
 	s.panelSearch = bootstrap.NewContainer(true)
 	s.AddElement(s.panelSearch)
 
+	s.inputSearch = bootstrap.NewInput(bootstrap.InputTypeText)
 	s.facets = NewSelect()
+	s.inputSearch.SetAttribute("placeholder", "Search...")
+	s.inputSearch.SetClass("form-control")
+	s.inputSearch.OnKeyPressEvent(gowd.OnKeyPress, 13, s.btnSearchClick)
+	s.inputSearch.SetAttribute("autofocus", "true")
+	s.btnSearch = bootstrap.NewButton(bootstrap.ButtonPrimary, "Search")
+	s.btnSearch.OnEvent(gowd.OnClick, s.btnSearchClick)
+
 	s.facets.Element.SetClass("form-control")
 	s.facets.OnEvent(gowd.OnChange, s.facetChanged)
-
-	s.updateState()
 
 	return s
 }
@@ -42,11 +46,7 @@ func (s *search) facetChanged(sender *gowd.Element, event *gowd.EventElement) {
 
 func (s *search) btnPageClick(sender *gowd.Element, event *gowd.EventElement) {
 	page := sender.Object.(model.PageItem)
-	err := s.activeSearch.StartFrom(page.From)
-	if err != nil {
-		Root.addAlertError(err)
-		return
-	}
+	s.activeSearch.StartFrom(page.Start)
 	s.updateState()
 }
 
@@ -66,14 +66,8 @@ func (s *search) btnSearchClick(sender *gowd.Element, event *gowd.EventElement) 
 }
 
 func (s *search) doQuery(term string) {
-	var query query.Query
-	if term == "" {
-		query = bleve.NewMatchAllQuery()
-	} else {
-		query = bleve.NewQueryStringQuery(term)
-	}
 	var err error
-	s.activeSearch, err = model.NewSearch(term, query)
+	s.activeSearch, err = model.NewSearch(term)
 	if err != nil {
 		Root.addAlertError(err)
 		return
@@ -88,15 +82,10 @@ func (s *search) thumbClick(sender *gowd.Element, event *gowd.EventElement) {
 }
 
 func (s *search) populateToolbar(toolbar *gowd.Element) {
-	s.inputSearch = bootstrap.NewInput(bootstrap.InputTypeText)
-	s.inputSearch.SetAttribute("placeholder", "Search...")
-	s.inputSearch.SetClass("form-control")
-	s.inputSearch.OnKeyPressEvent(gowd.OnKeyPress, 13, s.btnSearchClick)
-	s.inputSearch.SetAttribute("autofocus", "true")
-	s.btnSearch = bootstrap.NewButton(bootstrap.ButtonPrimary, "Search")
-	s.btnSearch.OnEvent(gowd.OnClick, s.btnSearchClick)
 
-	toolbar.AddElement(bootstrap.NewInputGroup(s.inputSearch, bootstrap.NewElement("div", "input-group-btn", s.btnSearch), s.facets.Element))
+	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 2, s.inputSearch))
+	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 1, s.btnSearch))
+	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 2, s.facets.Element))
 
 }
 
@@ -110,7 +99,7 @@ func (s *search) updateState() {
 
 	if s.activeSearch == nil {
 		var err error
-		s.activeSearch, err = model.NewSearch("", bleve.NewMatchAllQuery())
+		s.activeSearch, err = model.NewSearch("")
 		if err != nil {
 			Root.addAlertError(err)
 			return
@@ -119,7 +108,7 @@ func (s *search) updateState() {
 
 	for i, thumb := range s.activeSearch.Thumbs {
 		img := bootstrap.NewElement("img", "img-thumbnail")
-		img.SetAttribute("src", "file:///"+thumb.Path)
+		img.SetAttribute("src", "file:///" + thumb.Path)
 
 		link := bootstrap.NewLinkButton("")
 		link.Object = i

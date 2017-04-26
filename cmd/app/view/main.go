@@ -34,7 +34,7 @@ func newMain() *main {
 	m.menu.btnSettings.OnEvent(gowd.OnClick, m.btnSettingsClick)
 	m.AddElement(m.menu.Element)
 
-	m.toolbar = bootstrap.NewElement("div", "navbar btn-toolbar")
+	m.toolbar = bootstrap.NewElement("div", "row")
 	m.toolbar.SetAttribute("style", "margin-top: 5px;")
 	m.AddElement(m.toolbar)
 
