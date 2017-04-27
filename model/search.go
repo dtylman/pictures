@@ -1,43 +1,15 @@
 package model
 
 import (
-	"github.com/blevesearch/bleve"
-	"github.com/blevesearch/bleve/search/query"
-	"github.com/dtylman/pictures/conf"
 	"github.com/dtylman/pictures/indexer/db"
+	"github.com/dtylman/pictures/indexer/picture"
 	"github.com/dtylman/pictures/indexer/thumbs"
 	"log"
-	"path/filepath"
+	"github.com/dtylman/pictures/conf"
 	"strconv"
+	"strings"
+	"sort"
 )
-
-const maxPages = 10
-
-//FacetItem represents facet item in the display
-type FacetItem struct {
-	Name  string
-	Field string
-	Term  string
-	Count int
-}
-
-//PageItem represents a paging item
-type PageItem struct {
-	From    int
-	Active  bool
-	Caption string
-}
-
-//ImageItem represents one image being now presented
-type ImageItem struct {
-	Hit      int
-	Name     string
-	Path     string
-	ID       string
-	Location string
-	MimeType string
-	Details  map[string]interface{}
-}
 
 type ThumbItem struct {
 	Path string
@@ -45,103 +17,91 @@ type ThumbItem struct {
 }
 
 type Search struct {
-	QueryString string
-	Result      *bleve.SearchResult
-	query       query.Query
+	query       string
+	hit         int
 	start       int
-	ActiveImage ImageItem
-	Pages       []PageItem
-	Facets      []FacetItem
+	Results     []*picture.Index
+	ActiveImage *picture.Index
+	Pages       Pages
+	Facets      Facets
 	Thumbs      []ThumbItem
 }
 
-func NewSearch(queryString string, query query.Query) (*Search, error) {
+func NewSearch(query string) (*Search, error) {
 	s := new(Search)
 	s.query = query
-	s.QueryString = queryString
-	s.start = 0
-	s.doQuery()
+	err := s.doQuery()
+	if err != nil {
+		return nil, err
+	}
 	return s, nil
 }
 
-func (s *Search) StartFrom(start int) error {
-	s.start = start
-	return s.doQuery()
-}
-
 func (s *Search) SetActiveImage(hit int) {
-	s.ActiveImage.ID = s.Result.Hits[hit].ID
-	s.ActiveImage.Hit = hit
-	s.ActiveImage.Details = s.Result.Hits[hit].Fields
-	s.ActiveImage.Path = s.Result.Hits[hit].Fields["path"].(string)
-	s.ActiveImage.Location = s.Result.Hits[hit].Fields["location"].(string)
-	s.ActiveImage.MimeType = s.Result.Hits[hit].Fields["mime_type"].(string)
-	s.ActiveImage.Name = filepath.Base(s.ActiveImage.Path)
+	s.hit = hit
+	s.ActiveImage = s.Results[s.start + s.hit]
 }
 
-func (s *Search) NextImage() error {
-	hit := s.ActiveImage.Hit + 1
-	if hit >= int(s.Result.Total) {
+func (s *Search) NextImage() {
+	nextHit := s.hit + 1
+	if nextHit + s.start >= s.Total() {
 		//nowhere to go
-		return nil
+		return
 	}
-	if hit >= conf.Options.SearchPageSize {
-		return s.NextPage()
+	if nextHit >= conf.Options.SearchPageSize {
+		s.NextPage()
+		return
 	}
-	s.SetActiveImage(hit)
-	return nil
+	s.SetActiveImage(nextHit)
 }
 
-func (s *Search) PrevImage() error {
-	hit := s.ActiveImage.Hit - 1
-	log.Println(hit)
-	if hit < 0 {
-		return s.PrevPage()
+func (s *Search) PrevImage() {
+	prevHit := s.hit - 1
+	if prevHit + s.start < 0 {
+		s.PrevPage()
+		return
 	}
-	s.SetActiveImage(hit)
-	return nil
+	s.SetActiveImage(prevHit)
 }
 
-func (s *Search) NextPage() error {
+func (s *Search) NextPage() {
 	from := s.start + conf.Options.SearchPageSize
-	if from >= int(s.Result.Total) {
+	if from >= s.Total() {
 		//no where to go
-		return nil
+		return
 	}
 	s.start = from
-	err := s.doQuery()
-	if err != nil {
-		return err
-	}
 	s.SetActiveImage(0)
-	return nil
+	s.buildPages()
+	s.buildThumbs()
 }
 
-func (s *Search) PrevPage() error {
+func (s *Search) PrevPage() {
 	from := s.start - conf.Options.SearchPageSize
 	if from < 0 {
 		//no where to go
-		return nil
+		return
 	}
 	s.start = from
-	err := s.doQuery()
-	if err != nil {
-		return err
-	}
-	s.SetActiveImage(s.Result.Hits.Len() - 1)
-	return nil
+	s.SetActiveImage(0)
+	s.buildPages()
+	s.buildThumbs()
 }
 
 func (s *Search) doQuery() error {
-	req := bleve.NewSearchRequestOptions(s.query, conf.Options.SearchPageSize, s.start, false)
-	req.Fields = []string{"*"}
-	req.AddFacet("Location", bleve.NewFacetRequest("location", 6))
-	req.AddFacet("Album", bleve.NewFacetRequest("album", 4))
-	var err error
-	s.Result, err = db.Search(req)
+	var q db.Query
+	if s.query == "duplicates" {
+		q = db.NewStaticQuery(db.QueryDuplicates)
+	} else {
+		q = db.NewTermQuery(s.query, false, db.NOLIMIT)
+	}
+	err := q.Query()
 	if err != nil {
 		return err
 	}
+	s.Results = q.Results()
+	s.start = 0
+	s.hit = 0
 	s.buildFacetItems()
 	s.buildPages()
 	s.buildThumbs()
@@ -150,40 +110,68 @@ func (s *Search) doQuery() error {
 
 func (s *Search) buildPages() {
 	if conf.Options.SearchPageSize == 0 {
-		s.Pages = make([]PageItem, 0)
+		s.Pages = make(Pages, 0)
 		return
 	}
-	pageCount := int(s.Result.Total) / conf.Options.SearchPageSize
-	pages := maxPages
-	if pageCount < 10 {
-		pages = pageCount
-	}
+	pageCount := s.Total() / conf.Options.SearchPageSize
 	fromPage := s.start / conf.Options.SearchPageSize
-	s.Pages = make([]PageItem, pages)
-	for i := 0; i < pages; i++ {
-		s.Pages[i].From = i * conf.Options.SearchPageSize
+	s.Pages = make(Pages, pageCount)
+	for i := 0; i < pageCount; i++ {
+		s.Pages[i].Start = i * conf.Options.SearchPageSize
 		s.Pages[i].Active = (i == fromPage)
-		s.Pages[i].Caption = strconv.Itoa(s.Pages[i].From)
+		s.Pages[i].Caption = strconv.Itoa(s.Pages[i].Start)
 	}
 }
 
 func (s *Search) buildFacetItems() {
-	s.Facets = make([]FacetItem, 0)
-	for fn, fr := range s.Result.Facets {
-		for _, term := range fr.Terms {
-			s.Facets = append(s.Facets, FacetItem{Name: fn, Field: fr.Field, Term: term.Term, Count: term.Count})
+	facetMap := make(map[string]int)
+	for _, image := range s.Results {
+		for _, term := range strings.Split(image.Album + " " + image.Location, " ") {
+			if term != "" {
+				facetMap[term]++
+			}
 		}
+	}
+	s.Facets = make(Facets, 0)
+
+	for term, count := range facetMap {
+		s.Facets = append(s.Facets, FacetItem{Term: term, Count: count})
+	}
+	sort.Sort(s.Facets)
+	if s.Facets.Len() > 25 {
+		s.Facets = s.Facets[0:25]
 	}
 }
 
 func (s *Search) buildThumbs() {
-	s.Thumbs = make([]ThumbItem, s.Result.Hits.Len())
-	for i := 0; i < s.Result.Hits.Len(); i++ {
-		s.Thumbs[i].MD5 = s.Result.Hits[i].Fields["md5"].(string)
+	thumbsCount := s.Total()
+	if thumbsCount > conf.Options.SearchPageSize {
+		thumbsCount = conf.Options.SearchPageSize
+	}
+	s.Thumbs = make([]ThumbItem, thumbsCount)
+	for i := 0; i < thumbsCount; i++ {
+		s.Thumbs[i].MD5 = s.Results[s.start + i].MD5
 		var err error
-		s.Thumbs[i].Path, err = thumbs.MakeThumb(s.Result.Hits[i].Fields["path"].(string), s.Thumbs[i].MD5, false)
+		s.Thumbs[i].Path, err = thumbs.MakeThumb(s.Results[s.start + i].Path, s.Thumbs[i].MD5, false)
 		if err != nil {
 			log.Println(err)
 		}
 	}
+
+}
+
+func (s*Search) StartFrom(start int) {
+	if start <= s.Total() {
+		s.start = start
+		s.SetActiveImage(0)
+		s.buildPages()
+		s.buildThumbs()
+	}
+}
+
+func (s*Search) Total() int {
+	if s.Results != nil {
+		return len(s.Results)
+	}
+	return 0
 }

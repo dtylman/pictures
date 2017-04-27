@@ -5,6 +5,7 @@ import (
 
 	"github.com/dtylman/pictures/indexer/db"
 	"github.com/dtylman/pictures/indexer/picture"
+	"log"
 )
 
 type processorBatch struct {
@@ -25,12 +26,15 @@ func (pb *processorBatch) reset() {
 
 func (pb *processorBatch) add(image *picture.Index) {
 	pb.images.PushBack(image)
-	if time.Since(pb.commitTime) > time.Second*150 {
+	if time.Since(pb.commitTime) > time.Second * 150 {
 		pb.commit()
 	}
 }
 
 func (pb *processorBatch) commit() {
-	db.BatchIndex(pb.images)
+	err := db.BatchIndex(pb.images)
+	if err != nil {
+		log.Println(err)
+	}
 	pb.reset()
 }

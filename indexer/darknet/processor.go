@@ -7,6 +7,7 @@ import (
 	"time"
 	"github.com/dtylman/pictures/conf"
 	"errors"
+	"github.com/dtylman/pictures/indexer/db"
 )
 
 type Processor struct {
@@ -20,11 +21,9 @@ func NewProcessor() *Processor {
 }
 
 func (p*Processor) Process(image*picture.Index) error {
-	if image.HasPhase(picture.PhaseObjects) {
+	if !db.SetPhase(image.MD5,db.PhaseObjects){
 		return nil
 	}
-	defer image.SetPhase(picture.PhaseObjects)
-
 	tasklog.StatusMessage(tasklog.IndexerTask, fmt.Sprintf("Detecing objects for %s", image.Path))
 	res, err := p.darknet.Detect(image.Path, time.Duration(conf.Options.DarknetTimeout) * time.Second)
 	if err != nil {

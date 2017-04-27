@@ -13,6 +13,7 @@ const (
 	defaultBleveFolder = "pictures.db"
 	defaultFilesPath = "files"
 	defaultBoltFileName = "bolt.db"
+	defaultSQLiteFileName = "sqlite.db"
 )
 
 //Options ...
@@ -155,6 +156,12 @@ func BlevePath() (string, error) {
 //BoltPath bold db file path
 func BoltPath() (string, error) {
 	return getFileFromDataFolder(defaultBoltFileName)
+}
+
+
+//SqlitePath bold db file path
+func SqlitePath() (string, error) {
+	return getFileFromDataFolder(defaultSQLiteFileName)
 }
 
 //FilesPath is the place where files are stored.

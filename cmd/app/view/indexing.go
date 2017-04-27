@@ -52,7 +52,7 @@ func (iv *indexingView) updateState() {
 }
 
 func (iv *indexingView) populateToolbar(toolbar *gowd.Element) {
-	toolbar.AddElement(iv.btnStop)
+	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 1, iv.btnStop))
 }
 
 func (iv *indexingView) updateIndexerProgress(status tasklog.Task) {

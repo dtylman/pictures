@@ -56,9 +56,12 @@ func (i *Indexer) indexPictures() {
 		}
 	}
 	tasklog.StatusMessage(tasklog.IndexerTask, fmt.Sprintf("Saving %d new items...", i.images.Length()))
-	db.BatchIndex(i.images)
+	err := db.BatchIndex(i.images)
+	if err != nil {
+		tasklog.Error(err)
+	}
 	tasklog.StatusMessage(tasklog.IndexerTask, "Checking for missing files...")
-	err := remover.Remove()
+	err = remover.Remove()
 	if err != nil {
 		tasklog.Error(err)
 	}
