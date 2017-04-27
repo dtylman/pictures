@@ -4,6 +4,7 @@ import (
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
 	"github.com/dtylman/pictures/indexer"
+	"github.com/dtylman/pictures/cmd/app/darktheme"
 )
 
 type main struct {
@@ -26,6 +27,15 @@ func newMain() *main {
 
 	// body
 	m.Element = bootstrap.NewContainer(true)
+	menu := darktheme.NewMenu()
+	menu.AddSideButton("Search", "fa fa-search", m.btnSearchClick)
+	menu.AddSideButton("Index", "fa fa-globe", m.btnIndexClick)
+	menu.AddSideButton("Backup", "fa fa-globe", m.btnBackupClick)
+	menu.AddSideButton("Settings", "fa fa-globe", m.btnSettingsClick)
+	btn := menu.AddTopButton("Close", "fa fa-close", nil)
+	btn.SetAttribute("onclick", "window.close()")
+	m.Element.AddElement(menu.Element)
+	return m
 	//menu
 	m.menu = newMainMenu()
 	m.menu.btnSearch.OnEvent(gowd.OnClick, m.btnSearchClick)
