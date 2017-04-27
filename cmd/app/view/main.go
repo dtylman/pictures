@@ -4,14 +4,16 @@ import (
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
 	"github.com/dtylman/pictures/indexer"
-	"github.com/dtylman/pictures/cmd/app/darktheme"
+	"github.com/dtylman/pictures/cmd/app/view/darktheme"
 )
 
 type main struct {
 	*gowd.Element
-	menu     *mainMenu
-	toolbar  *gowd.Element
-	alerts   *gowd.Element
+
+	menu     *gowd.Element
+
+	alerts   *darktheme.Alerts
+
 	content  *gowd.Element
 
 	//views
@@ -26,38 +28,45 @@ func newMain() *main {
 	m := new(main)
 
 	// body
-	m.Element = bootstrap.NewContainer(true)
+	m.Element = gowd.NewElement("div")
+	m.Element.SetID("wrapper")
+
+	// menu
 	menu := darktheme.NewMenu()
 	menu.AddSideButton("Search", "fa fa-search", m.btnSearchClick)
-	menu.AddSideButton("Index", "fa fa-globe", m.btnIndexClick)
-	menu.AddSideButton("Backup", "fa fa-globe", m.btnBackupClick)
-	menu.AddSideButton("Settings", "fa fa-globe", m.btnSettingsClick)
+	//search, google style
+	menu.AddSideButton("Browse", "fa fa-list", m.btnSearchClick)
+	//albums, locations, timeline (?)
+	menu.AddSideButton("Thumbs", "fa fa-image", m.btnSearchClick)
+	//show search results in thumbs
+	menu.AddSideButton("Actions", "fa fa-cog", m.btnSearchClick)
+	//show table with search results, something you can work on
+	menu.AddSideButton("Faces", "fa fa-user", m.btnSearchClick)
+	//show and manage faces
+	menu.AddSideButton("Index", "fa fa-database", m.btnIndexClick)
+	//do the indexing
+	menu.AddSideButton("Manage", "fa fa-adjust", m.btnBackupClick)
+	//backup, restore, remove_from_source
+	menu.AddSideButton("Settings", "fa fa-gears", m.btnSettingsClick)
+	//about
+	menu.AddTopButton("About", "fa fa-question", m.btnSettingsClick)
+
+	m.menu = menu.Element
+
 	btn := menu.AddTopButton("Close", "fa fa-close", nil)
 	btn.SetAttribute("onclick", "window.close()")
-	m.Element.AddElement(menu.Element)
-	return m
-	//menu
-	m.menu = newMainMenu()
-	m.menu.btnSearch.OnEvent(gowd.OnClick, m.btnSearchClick)
-	m.menu.btnIndex.OnEvent(gowd.OnClick, m.btnIndexClick)
-	m.menu.btnBackup.OnEvent(gowd.OnClick, m.btnBackupClick)
-	m.menu.btnSettings.OnEvent(gowd.OnClick, m.btnSettingsClick)
-	m.AddElement(m.menu.Element)
 
-	m.toolbar = bootstrap.NewElement("div", "row")
-	m.toolbar.SetAttribute("style", "margin-top: 5px;")
-	m.AddElement(m.toolbar)
+	m.AddElement(menu.Element)
 
-	// alerts
-	m.alerts = gowd.NewElement("div")
-	m.AddElement(m.alerts)
+	m.alerts = darktheme.NewAlerts()
+	m.AddElement(bootstrap.NewContainer(true, m.alerts.Element))
 
 	//content
 	m.content = bootstrap.NewContainer(true)
 	m.AddElement(m.content)
 
 	//views
-	m.search = newSearch()
+	m.search = newSearchView()
 	m.indexer = newIndexerView()
 	m.indexing = newIndexingView()
 	m.backup = newBackupView()
@@ -88,16 +97,12 @@ func (m *main) btnBackupClick(*gowd.Element, *gowd.EventElement) {
 
 func (m *main) setActiveView(view view) {
 	view.updateState()
-
-	m.toolbar.RemoveElements()
-	view.populateToolbar(m.toolbar)
-
 	m.content.RemoveElements()
 	m.content.AddElement(view.getContent())
 }
 
 func (m *main) addAlert(title string, caption string, alertType string) {
-	m.alerts.AddElement(bootstrap.NewAlert(title, caption, alertType, true))
+	m.alerts.Add(caption)
 }
 
 func (m *main) addAlertError(err error) {

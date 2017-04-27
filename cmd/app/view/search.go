@@ -14,16 +14,33 @@ type search struct {
 	inputSearch *gowd.Element
 	btnSearch   *gowd.Element
 	facets      *Select
-	panelSearch *gowd.Element
 }
 
-func newSearch() *search {
+func newSearchView() *search {
 	s := new(search)
-	s.Element = bootstrap.NewContainer(true)
-
-	s.panelSearch = bootstrap.NewContainer(true)
-	s.AddElement(s.panelSearch)
-
+	var err error
+	s.Element, err = gowd.ParseElement(`<div>
+	    	<div class="row">
+			<div class="col-lg-4">
+		    		<p>
+				<input class="form-control" placeholder="Search String">
+		    		</p>
+			</div>
+		<div class="col-lg-1">
+		    <p>
+			<button type="button" class="btn btn-primary">Search</button>
+		    </p>
+		</div>
+		<div class="col-lg-7">
+		    <p>
+			<select class="form-control"></select>
+		    </p>
+		</div>
+	    </div></div>`)
+	if err != nil {
+		panic(err)
+	}
+	//
 	s.inputSearch = bootstrap.NewInput(bootstrap.InputTypeText)
 	s.facets = NewSelect()
 	s.inputSearch.SetAttribute("placeholder", "Search...")
@@ -32,7 +49,7 @@ func newSearch() *search {
 	s.inputSearch.SetAttribute("autofocus", "true")
 	s.btnSearch = bootstrap.NewButton(bootstrap.ButtonPrimary, "Search")
 	s.btnSearch.OnEvent(gowd.OnClick, s.btnSearchClick)
-
+	s.AddElement(s.btnSearch)
 	s.facets.Element.SetClass("form-control")
 	s.facets.OnEvent(gowd.OnChange, s.facetChanged)
 
@@ -82,18 +99,9 @@ func (s *search) thumbClick(sender *gowd.Element, event *gowd.EventElement) {
 	Root.setActiveView(newImage())
 }
 
-func (s *search) populateToolbar(toolbar *gowd.Element) {
-
-	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 2, s.inputSearch))
-	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 1, s.btnSearch))
-	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 2, s.facets.Element))
-}
-
 func (s *search) updateState() {
-	s.panelSearch.RemoveElements()
 
 	well := bootstrap.NewElement("div", "well")
-	s.panelSearch.AddElement(well)
 	row := bootstrap.NewRow()
 	well.AddElement(row)
 
@@ -142,14 +150,13 @@ func (s *search) updateState() {
 	btn = bootstrap.NewLinkButton(">>")
 	btn.OnEvent(gowd.OnClick, s.btnNextClick)
 	pagination.Items.AddItem(btn)
-	s.panelSearch.AddElement(pagination.Element)
 
 	// facets
 	s.facets.RemoveElements()
 	for _, facet := range activeSearch.Facets {
 		s.facets.AddOption(fmt.Sprintf("%s (%d)", facet.Term, facet.Count), facet.Term)
 	}
-
+	s.Element.AddElement(well)
 }
 
 func (s *search) getContent() *gowd.Element {
