@@ -5,6 +5,7 @@ import (
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
 	"github.com/dtylman/pictures/model"
+	"path/filepath"
 )
 
 var activeSearch *model.Search
@@ -14,6 +15,7 @@ type search struct {
 	inputSearch *gowd.Element
 	btnSearch   *gowd.Element
 	facets      *Select
+	thumbs      *gowd.Element
 }
 
 func newSearchView() *search {
@@ -22,37 +24,40 @@ func newSearchView() *search {
 	s.Element, err = gowd.ParseElement(`<div>
 	    	<div class="row">
 			<div class="col-lg-4">
-		    		<p>
-				<input class="form-control" placeholder="Search String">
+		    		<p id="pnl1">
 		    		</p>
 			</div>
-		<div class="col-lg-1">
-		    <p>
-			<button type="button" class="btn btn-primary">Search</button>
-		    </p>
-		</div>
-		<div class="col-lg-7">
-		    <p>
-			<select class="form-control"></select>
-		    </p>
-		</div>
-	    </div></div>`)
+			<div class="col-lg-1">
+				<p id="pnl2">
+		    		</p>
+			</div>
+			<div class="col-lg-7">
+		    		<p id="pnl3">
+		    		</p>
+			</div>
+	   	</div>`)
 	if err != nil {
 		panic(err)
 	}
-	//
+
 	s.inputSearch = bootstrap.NewInput(bootstrap.InputTypeText)
-	s.facets = NewSelect()
 	s.inputSearch.SetAttribute("placeholder", "Search...")
 	s.inputSearch.SetClass("form-control")
 	s.inputSearch.OnKeyPressEvent(gowd.OnKeyPress, 13, s.btnSearchClick)
 	s.inputSearch.SetAttribute("autofocus", "true")
+	s.Element.Find("pnl1").AddElement(s.inputSearch)
+
 	s.btnSearch = bootstrap.NewButton(bootstrap.ButtonPrimary, "Search")
 	s.btnSearch.OnEvent(gowd.OnClick, s.btnSearchClick)
-	s.AddElement(s.btnSearch)
+	s.Element.Find("pnl2").AddElement(s.btnSearch)
+
+	s.facets = NewSelect()
 	s.facets.Element.SetClass("form-control")
 	s.facets.OnEvent(gowd.OnChange, s.facetChanged)
+	s.Element.Find("pnl3").AddElement(s.facets.Element)
 
+	s.thumbs = gowd.NewElement("div")
+	s.AddElement(s.thumbs)
 	return s
 }
 
@@ -100,11 +105,6 @@ func (s *search) thumbClick(sender *gowd.Element, event *gowd.EventElement) {
 }
 
 func (s *search) updateState() {
-
-	well := bootstrap.NewElement("div", "well")
-	row := bootstrap.NewRow()
-	well.AddElement(row)
-
 	if activeSearch == nil {
 		var err error
 		activeSearch, err = model.NewSearch("")
@@ -114,19 +114,20 @@ func (s *search) updateState() {
 		}
 	}
 
+	s.thumbs.RemoveElements()
+	row := bootstrap.NewElement("div", "row")
 	for i, thumb := range activeSearch.Thumbs {
-		img := bootstrap.NewElement("img", "img-thumbnail")
+		img := bootstrap.NewElement("img", "thumbnail img-responsive")
 		img.SetAttribute("src", "file:///" + thumb.Path)
-
-		link := bootstrap.NewLinkButton("")
-		link.Object = i
-		link.OnEvent(gowd.OnClick, s.thumbClick)
-		link.AddElement(img)
-
-		col := bootstrap.NewColumn(bootstrap.ColumnLarge, 3)
-		col.AddElement(link)
-
-		row.AddElement(col)
+		img.OnEvent(gowd.OnClick, s.thumbClick)
+		img.Object = i
+		span := gowd.NewElement("span")
+		span.AddElement(gowd.NewText(filepath.Base(thumb.Path)))
+		row.AddElement(bootstrap.NewColumn(bootstrap.ColumnMedium, 3, bootstrap.NewElement("div", "well", img, span)))
+		if i % 4 == 3 {
+			s.thumbs.AddElement(row)
+			row = bootstrap.NewElement("div", "row")
+		}
 	}
 
 	//build the pagination
@@ -156,7 +157,6 @@ func (s *search) updateState() {
 	for _, facet := range activeSearch.Facets {
 		s.facets.AddOption(fmt.Sprintf("%s (%d)", facet.Term, facet.Count), facet.Term)
 	}
-	s.Element.AddElement(well)
 }
 
 func (s *search) getContent() *gowd.Element {
