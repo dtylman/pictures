@@ -265,22 +265,3 @@ func rows2Image(rows*sql.Rows) (*picture.Index, error) {
 	image.Taken = time.Unix(taken, 0)
 	return &image, nil
 }
-
-/*
-some samples:
- > get albums facet
---select album,  count(*) as total  from file group by album order by total desc limit 5
-
- > find duplicates
---select md5, path ,count(*) as count from file group by md5,path having count > 1
-
- >
- select  distinct picture.md5 from picture
- JOIN file on file.md5=picture.md5
-where picture.mime_type like '%2017%' or
-picture.location like '%2017%' or
-picture.objects like '%2017%' or
-file.album like '%2017%' or
-file.path like '%2017%'
-ORDER by picture.taken, file.time COLLATE NOCASE
- */

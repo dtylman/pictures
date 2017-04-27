@@ -7,13 +7,14 @@ import (
 	"github.com/dtylman/pictures/model"
 )
 
+var activeSearch *model.Search
+
 type search struct {
 	*gowd.Element
-	inputSearch  *gowd.Element
-	btnSearch    *gowd.Element
-	facets       *Select
-	panelSearch  *gowd.Element
-	activeSearch *model.Search
+	inputSearch *gowd.Element
+	btnSearch   *gowd.Element
+	facets      *Select
+	panelSearch *gowd.Element
 }
 
 func newSearch() *search {
@@ -46,17 +47,17 @@ func (s *search) facetChanged(sender *gowd.Element, event *gowd.EventElement) {
 
 func (s *search) btnPageClick(sender *gowd.Element, event *gowd.EventElement) {
 	page := sender.Object.(model.PageItem)
-	s.activeSearch.StartFrom(page.Start)
+	activeSearch.StartFrom(page.Start)
 	s.updateState()
 }
 
 func (s *search) btnPrevClick(sender *gowd.Element, event *gowd.EventElement) {
-	s.activeSearch.PrevPage()
+	activeSearch.PrevPage()
 	s.updateState()
 }
 
 func (s *search) btnNextClick(sender *gowd.Element, event *gowd.EventElement) {
-	s.activeSearch.NextPage()
+	activeSearch.NextPage()
 	s.updateState()
 }
 
@@ -67,7 +68,7 @@ func (s *search) btnSearchClick(sender *gowd.Element, event *gowd.EventElement) 
 
 func (s *search) doQuery(term string) {
 	var err error
-	s.activeSearch, err = model.NewSearch(term)
+	activeSearch, err = model.NewSearch(term)
 	if err != nil {
 		Root.addAlertError(err)
 		return
@@ -77,8 +78,8 @@ func (s *search) doQuery(term string) {
 
 func (s *search) thumbClick(sender *gowd.Element, event *gowd.EventElement) {
 	hit := sender.Object.(int)
-	s.activeSearch.SetActiveImage(hit)
-	Root.setActiveView(newImage(s.activeSearch))
+	activeSearch.SetActiveImage(hit)
+	Root.setActiveView(newImage())
 }
 
 func (s *search) populateToolbar(toolbar *gowd.Element) {
@@ -86,7 +87,6 @@ func (s *search) populateToolbar(toolbar *gowd.Element) {
 	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 2, s.inputSearch))
 	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 1, s.btnSearch))
 	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 2, s.facets.Element))
-
 }
 
 func (s *search) updateState() {
@@ -97,16 +97,16 @@ func (s *search) updateState() {
 	row := bootstrap.NewRow()
 	well.AddElement(row)
 
-	if s.activeSearch == nil {
+	if activeSearch == nil {
 		var err error
-		s.activeSearch, err = model.NewSearch("")
+		activeSearch, err = model.NewSearch("")
 		if err != nil {
 			Root.addAlertError(err)
 			return
 		}
 	}
 
-	for i, thumb := range s.activeSearch.Thumbs {
+	for i, thumb := range activeSearch.Thumbs {
 		img := bootstrap.NewElement("img", "img-thumbnail")
 		img.SetAttribute("src", "file:///" + thumb.Path)
 
@@ -115,7 +115,7 @@ func (s *search) updateState() {
 		link.OnEvent(gowd.OnClick, s.thumbClick)
 		link.AddElement(img)
 
-		col := bootstrap.NewColumn(bootstrap.ColumnXtraSmall, 3)
+		col := bootstrap.NewColumn(bootstrap.ColumnLarge, 3)
 		col.AddElement(link)
 
 		row.AddElement(col)
@@ -126,13 +126,16 @@ func (s *search) updateState() {
 	btn := bootstrap.NewLinkButton("<<")
 	btn.OnEvent(gowd.OnClick, s.btnPrevClick)
 	pagination.Items.AddItem(btn)
-	for _, page := range s.activeSearch.Pages {
-		btn := bootstrap.NewLinkButton(page.Caption)
-		btn.Object = page
-		btn.OnEvent(gowd.OnClick, s.btnPageClick)
-		item := pagination.Items.AddItem(btn)
-		if page.Active {
-			item.SetClass("active")
+	activePage := activeSearch.Pages.ActivePage()
+	for pageOrder, page := range activeSearch.Pages {
+		if pageOrder > (activePage - 7) && pageOrder < (activePage + 7) {
+			btn := bootstrap.NewLinkButton(page.Caption)
+			btn.Object = page
+			btn.OnEvent(gowd.OnClick, s.btnPageClick)
+			item := pagination.Items.AddItem(btn)
+			if page.Active {
+				item.SetClass("active")
+			}
 		}
 
 	}
@@ -142,10 +145,9 @@ func (s *search) updateState() {
 	s.panelSearch.AddElement(pagination.Element)
 
 	// facets
-
 	s.facets.RemoveElements()
-	for _, facet := range s.activeSearch.Facets {
-		s.facets.AddOption(fmt.Sprintf("%s (%d)", facet.Term, facet.Count), fmt.Sprintf("%s: %s", facet.Field, facet.Term))
+	for _, facet := range activeSearch.Facets {
+		s.facets.AddOption(fmt.Sprintf("%s (%d)", facet.Term, facet.Count), facet.Term)
 	}
 
 }

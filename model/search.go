@@ -7,24 +7,9 @@ import (
 	"log"
 	"github.com/dtylman/pictures/conf"
 	"strconv"
-	"github.com/blevesearch/bleve"
-	_ "github.com/blevesearch/bleve/analysis/analyzer/keyword"
+	"strings"
+	"sort"
 )
-
-//FacetItem represents facet item in the display
-type FacetItem struct {
-	Name  string
-	Field string
-	Term  string
-	Count int
-}
-
-//PageItem represents a paging item
-type PageItem struct {
-	Start   int
-	Active  bool
-	Caption string
-}
 
 type ThumbItem struct {
 	Path string
@@ -32,19 +17,19 @@ type ThumbItem struct {
 }
 
 type Search struct {
-	term        string
+	query       string
 	hit         int
 	start       int
 	Results     []*picture.Index
 	ActiveImage *picture.Index
-	Pages       []PageItem
-	Facets      []FacetItem
+	Pages       Pages
+	Facets      Facets
 	Thumbs      []ThumbItem
 }
 
-func NewSearch(term string) (*Search, error) {
+func NewSearch(query string) (*Search, error) {
 	s := new(Search)
-	s.term = term
+	s.query = query
 	err := s.doQuery()
 	if err != nil {
 		return nil, err
@@ -104,18 +89,20 @@ func (s *Search) PrevPage() {
 }
 
 func (s *Search) doQuery() error {
-	tq := db.NewTermQuery(s.term, false, db.NOLIMIT)
-	err := tq.Query()
+	var q db.Query
+	if s.query == "duplicates" {
+		q = db.NewStaticQuery(db.QueryDuplicates)
+	} else {
+		q = db.NewTermQuery(s.query, false, db.NOLIMIT)
+	}
+	err := q.Query()
 	if err != nil {
 		return err
 	}
-	s.Results = tq.Result
+	s.Results = q.Results()
 	s.start = 0
 	s.hit = 0
-	err = s.buildFacetItems()
-	if err != nil {
-		return err
-	}
+	s.buildFacetItems()
 	s.buildPages()
 	s.buildThumbs()
 	return nil
@@ -123,12 +110,12 @@ func (s *Search) doQuery() error {
 
 func (s *Search) buildPages() {
 	if conf.Options.SearchPageSize == 0 {
-		s.Pages = make([]PageItem, 0)
+		s.Pages = make(Pages, 0)
 		return
 	}
 	pageCount := s.Total() / conf.Options.SearchPageSize
 	fromPage := s.start / conf.Options.SearchPageSize
-	s.Pages = make([]PageItem, pageCount)
+	s.Pages = make(Pages, pageCount)
 	for i := 0; i < pageCount; i++ {
 		s.Pages[i].Start = i * conf.Options.SearchPageSize
 		s.Pages[i].Active = (i == fromPage)
@@ -136,52 +123,24 @@ func (s *Search) buildPages() {
 	}
 }
 
-func (s *Search) buildFacetItems() error {
-	keywordIndex := bleve.NewTextFieldMapping()
-	keywordIndex.Store = false
-	keywordIndex.IncludeInAll = false
-	keywordIndex.IncludeTermVectors = false
-	keywordIndex.Analyzer = "keyword"
-	mapping := bleve.NewDocumentMapping()
-	mapping.AddFieldMappingsAt("location", keywordIndex)
-	mapping.AddFieldMappingsAt("album", keywordIndex)
-	disabledSection := bleve.NewDocumentDisabledMapping()
-	mapping.AddSubDocumentMapping("_all", disabledSection)
-
-	indexMapping := bleve.NewIndexMapping()
-	indexMapping.DefaultMapping = mapping
-	indexMapping.DefaultAnalyzer = "standard"
-
-	index, err := bleve.NewMemOnly(indexMapping)
-	if err != nil {
-		return err
-	}
-	defer index.Close()
-	s.Facets = make([]FacetItem, 0)
-	b := index.NewBatch()
+func (s *Search) buildFacetItems() {
+	facetMap := make(map[string]int)
 	for _, image := range s.Results {
-		err = b.Index(image.MD5, image)
-		if err != nil {
-			return err
+		for _, term := range strings.Split(image.Album + " " + image.Location, " ") {
+			if term != "" {
+				facetMap[term]++
+			}
 		}
 	}
-	err = index.Batch(b)
-	if err != nil {
-		return err
+	s.Facets = make(Facets, 0)
+
+	for term, count := range facetMap {
+		s.Facets = append(s.Facets, FacetItem{Term: term, Count: count})
 	}
-	req := bleve.NewSearchRequest(bleve.NewMatchAllQuery())
-	req.AddFacet("Location", bleve.NewFacetRequest("location", 6))
-	req.AddFacet("Album", bleve.NewFacetRequest("album", 4))
-	sr, err := index.Search(req)
-	if err != nil {
-		return err
+	sort.Sort(s.Facets)
+	if s.Facets.Len() > 25 {
+		s.Facets = s.Facets[0:25]
 	}
-	for fn, fr := range sr.Facets {
-		for _, term := range fr.Terms {
-			s.Facets = append(s.Facets, FacetItem{Name: fn, Field: fr.Field, Term: term.Term, Count: term.Count})
-		}
-	}
-	return nil
 }
 
 func (s *Search) buildThumbs() {

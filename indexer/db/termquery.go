@@ -6,10 +6,10 @@ import (
 )
 
 type TermQuery struct {
-	term   string
-	exact  bool
-	limit  int
-	Result []*picture.Index
+	term  string
+	exact bool
+	limit int
+	res   []*picture.Index
 }
 
 const NOLIMIT = 0
@@ -19,7 +19,7 @@ func NewTermQuery(term string, exact bool, limit int) *TermQuery {
 }
 
 func (tq*TermQuery) Query() error {
-	tq.Result = make([]*picture.Index, 0)
+	tq.res = make([]*picture.Index, 0)
 	var operator string
 	if tq.exact {
 		operator = fmt.Sprintf(` = '%s' `, tq.term)
@@ -53,8 +53,11 @@ func (tq*TermQuery) Query() error {
 		if err != nil {
 			return err
 		}
-		tq.Result = append(tq.Result, image)
+		tq.res = append(tq.res, image)
 	}
 	return nil
 }
 
+func (tq*TermQuery) Results() []*picture.Index {
+	return tq.res
+}

@@ -5,18 +5,15 @@ import (
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
 	"github.com/dtylman/pictures/indexer/picture"
-	"github.com/dtylman/pictures/model"
 )
 
 type image struct {
 	*gowd.Element
-	activeSearch *model.Search
 }
 
-func newImage(activeSearch *model.Search) *image {
+func newImage() *image {
 	i := new(image)
 	i.Element = bootstrap.NewElement("div", "well")
-	i.activeSearch = activeSearch
 
 	i.updateState()
 
@@ -35,12 +32,12 @@ func (i *image) populateToolbar(toolbar *gowd.Element) {
 }
 
 func (i *image) btnPrevClicked(sender *gowd.Element, event *gowd.EventElement) {
-	i.activeSearch.PrevImage()
+	activeSearch.PrevImage()
 	i.updateState()
 }
 
 func (i *image) btnNextClicked(sender *gowd.Element, event *gowd.EventElement) {
-	i.activeSearch.NextImage()
+	activeSearch.NextImage()
 	i.updateState()
 }
 
@@ -49,15 +46,15 @@ func (i *image) updateState() {
 	col := bootstrap.NewColumn(bootstrap.ColumnLarge, 9)
 	row := bootstrap.NewRow()
 	row.AddElement(col)
-	mimeType := i.activeSearch.ActiveImage.MimeType
+	mimeType := activeSearch.ActiveImage.MimeType
 	if picture.MimeIs(mimeType, picture.Image) {
 		img := bootstrap.NewElement("img", "img-responsive")
-		img.SetAttribute("src", fmt.Sprintf("file:///%s", i.activeSearch.ActiveImage.Path))
+		img.SetAttribute("src", fmt.Sprintf("file:///%s", activeSearch.ActiveImage.Path))
 
 		col.AddElement(img)
 	} else if picture.MimeIs(mimeType, picture.Video) {
 		vid := bootstrap.NewElement("video", "")
-		vid.SetAttribute("src", fmt.Sprintf("file:///%s", i.activeSearch.ActiveImage.Path))
+		vid.SetAttribute("src", fmt.Sprintf("file:///%s", activeSearch.ActiveImage.Path))
 		vid.SetAttribute("type", mimeType)
 		col.AddElement(vid)
 
@@ -69,7 +66,7 @@ func (i *image) updateState() {
 	row.AddElement(col)
 
 	pnl := bootstrap.NewPanel(bootstrap.PanelDefault)
-	pnl.AddTitle(i.activeSearch.ActiveImage.Path)
+	pnl.AddTitle(activeSearch.ActiveImage.Path)
 	pnl.AddToBody(row)
 
 	i.AddElement(pnl.Element)
