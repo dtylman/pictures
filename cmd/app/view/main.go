@@ -5,7 +5,10 @@ import (
 	"github.com/dtylman/gowd/bootstrap"
 	"github.com/dtylman/pictures/indexer"
 	"github.com/dtylman/pictures/cmd/app/view/darktheme"
+	"github.com/dtylman/pictures/model"
 )
+
+var activeSearch *model.Search
 
 type main struct {
 	*gowd.Element
@@ -18,6 +21,7 @@ type main struct {
 
 	//views
 	search   view
+	thumb    view
 	indexer  view
 	indexing view
 	backup   view
@@ -37,7 +41,7 @@ func newMain() *main {
 	//search, google style
 	menu.AddSideButton("Browse", "fa fa-list", m.btnSearchClick)
 	//albums, locations, timeline (?)
-	menu.AddSideButton("Thumbs", "fa fa-image", m.btnSearchClick)
+	menu.AddSideButton("Thumbs", "fa fa-image", m.btnThumbClick)
 	//show search results in thumbs
 	menu.AddSideButton("Actions", "fa fa-cog", m.btnSearchClick)
 	//show table with search results, something you can work on
@@ -67,6 +71,7 @@ func newMain() *main {
 
 	//views
 	m.search = newSearchView()
+	m.thumb = newThumbView()
 	m.indexer = newIndexerView()
 	m.indexing = newIndexingView()
 	m.backup = newBackupView()
@@ -77,6 +82,10 @@ func newMain() *main {
 
 func (m *main) btnSearchClick(*gowd.Element, *gowd.EventElement) {
 	m.setActiveView(m.search)
+}
+
+func (m *main) btnThumbClick(*gowd.Element, *gowd.EventElement) {
+	m.setActiveView(m.thumb)
 }
 
 func (m *main) btnIndexClick(sender *gowd.Element, e *gowd.EventElement) {

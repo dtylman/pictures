@@ -115,6 +115,12 @@ func createSchema() error {
 			name TEXT NOT NULL,
 			prob NUMBER NOT NULL
 			) WITHOUT ROWID`,
+		`CREATE VIEW images_view AS
+			SELECT DISTINCT picture.md5, mime_type,	file.path,
+			taken, lat, long, location, album, objects, faces
+			FROM picture
+			INNER JOIN file ON file.md5=picture.md5
+			ORDER BY taken, file.time`,
 	}
 	return execMultiple(schema)
 }
