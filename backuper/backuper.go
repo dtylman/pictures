@@ -2,7 +2,7 @@ package backuper
 
 import (
 	"sync"
-	"github.com/syndtr/goleveldb/leveldb/errors"
+	"errors"
 )
 
 var (

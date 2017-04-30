@@ -5,6 +5,7 @@ import (
 	"github.com/dtylman/gowd/bootstrap"
 	"github.com/dtylman/pictures/model"
 	"github.com/dtylman/pictures/cmd/app/view/darktheme"
+	"github.com/dtylman/pictures/indexer/db"
 )
 
 type search struct {
@@ -40,7 +41,8 @@ func newSearchView() *search {
 		panic(err)
 	}
 	pnlSubtitle := s.Find("pnlSubtitle")
-	pnlSubtitle.AddElement(gowd.NewText("15 images, 24 MB"))
+
+	pnlSubtitle.AddElement(gowd.NewText(db.Stats())
 	pnlSearch := s.Find("pnlSearch")
 	s.inputSearch = bootstrap.NewInput(bootstrap.InputTypeText)
 	s.inputSearch.SetClass("form-control input-lg")

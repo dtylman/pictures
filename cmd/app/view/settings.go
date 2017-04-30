@@ -31,7 +31,7 @@ func (sv *settingsView) updateState() {
 }
 
 func (sv *settingsView) populateToolbar(menu*darktheme.Menu) {
-	menu.AddTopButton("Save", "fa fa-save", sv.btnSaveClicked)
+	menu.AddButton(menu.TopLeft,"Save", "fa fa-save", sv.btnSaveClicked)
 }
 
 func (sv *settingsView) getContent() *gowd.Element {

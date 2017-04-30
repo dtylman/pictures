@@ -3,8 +3,6 @@ package db
 import (
 	"os"
 
-	"github.com/blevesearch/bleve"
-	"github.com/boltdb/bolt"
 	"github.com/dtylman/pictures/conf"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -13,10 +11,7 @@ import (
 )
 
 var (
-	idx bleve.Index
-	bdb          *bolt.DB
 	sqldb *sql.DB
-	imagesBucket = []byte("images")
 )
 
 func openSQlite() error {

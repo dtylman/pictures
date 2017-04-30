@@ -3,13 +3,13 @@ package view
 import (
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
-	"github.com/dtylman/pictures/indexer"
 	"github.com/dtylman/pictures/cmd/app/view/darktheme"
+	"github.com/dtylman/pictures/indexer"
 	"github.com/dtylman/pictures/model"
 )
 
 var (
-	Root *main
+	Root         *main
 	activeSearch *model.Search
 )
 
@@ -20,11 +20,11 @@ func InitializeComponents() {
 type main struct {
 	*gowd.Element
 
-	menu     *darktheme.Menu
+	menu *darktheme.Menu
 
-	alerts   *darktheme.Alerts
+	alerts *darktheme.Alerts
 
-	content  *gowd.Element
+	content *gowd.Element
 
 	//views
 	search   view
@@ -33,6 +33,7 @@ type main struct {
 	indexing view
 	backup   view
 	settings view
+	about view
 }
 
 func newMain() *main {
@@ -45,7 +46,7 @@ func newMain() *main {
 	// menu
 	m.menu = darktheme.NewMenu()
 	m.AddElement(m.menu.Element)
-	m.popluateMenu(nil)
+	m.popluateMenu()
 
 	m.alerts = darktheme.NewAlerts()
 	m.AddElement(bootstrap.NewContainer(true, m.alerts.Element))
@@ -61,42 +62,36 @@ func newMain() *main {
 	m.indexing = newIndexingView()
 	m.backup = newBackupView()
 	m.settings = newSettingsView()
-	// footer
+	m.about = newAboutView()
+
 	return m
 }
 
-func (m*main) popluateMenu(view view) {
-	m.menu.Top.RemoveElements()
-	m.menu.Side.RemoveElements()
-
+func (m *main) popluateMenu() {
 	// build static buttons...
-	m.menu.AddSideButton("Search", "fa fa-search", m.btnSearchClick)
+	m.menu.AddButton(m.menu.Side, "Search", "fa fa-search", m.btnSearchClick)
 	//search, google style
-	m.menu.AddSideButton("Browse", "fa fa-list", m.btnSearchClick)
+	m.menu.AddButton(m.menu.Side, "Browse", "fa fa-list", m.btnSearchClick)
 	//albums, locations, timeline (?)
-	m.menu.AddSideButton("Thumbs", "fa fa-image", m.btnThumbClick)
+	m.menu.AddButton(m.menu.Side, "Thumbs", "fa fa-image", m.btnThumbClick)
 	//show search results in thumbs
-	m.menu.AddSideButton("Actions", "fa fa-cog", m.btnSearchClick)
+	m.menu.AddButton(m.menu.Side, "Actions", "fa fa-cog", m.btnSearchClick)
 	//show table with search results, something you can work on
-	m.menu.AddSideButton("Faces", "fa fa-user", m.btnSearchClick)
+	m.menu.AddButton(m.menu.Side, "Faces", "fa fa-user", m.btnSearchClick)
 	//show and manage faces
-	m.menu.AddSideButton("Index", "fa fa-database", m.btnIndexClick)
+	m.menu.AddButton(m.menu.Side, "Index", "fa fa-database", m.btnIndexClick)
 	//do the indexing
-	m.menu.AddSideButton("Manage", "fa fa-adjust", m.btnBackupClick)
+	m.menu.AddButton(m.menu.Side, "Manage", "fa fa-adjust", m.btnBackupClick)
 	//backup, restore, remove_from_source
-	m.menu.AddSideButton("Settings", "fa fa-gears", m.btnSettingsClick)
+	m.menu.AddButton(m.menu.Side, "Settings", "fa fa-gears", m.btnSettingsClick)
 
 	//about
-	m.menu.AddSideButton("About", "fa fa-question", m.btnSettingsClick)
+	m.menu.AddButton(m.menu.Side, "About", "fa fa-question", m.btnAboutClick)
 
-	if view != nil {
-		view.populateToolbar(m.menu)
-	}
-
-	btn := m.menu.AddTopButton("Close", "fa fa-close", nil)
+	btn := m.menu.AddButton(m.menu.TopRight, "Close", "fa fa-close", nil)
 	btn.SetAttribute("onclick", "window.close()")
-
 }
+
 func (m *main) btnSearchClick(*gowd.Element, *gowd.EventElement) {
 	m.setActiveView(m.search)
 }
@@ -113,6 +108,10 @@ func (m *main) btnIndexClick(sender *gowd.Element, e *gowd.EventElement) {
 	}
 }
 
+func (m *main) btnAboutClick(*gowd.Element, *gowd.EventElement) {
+	m.setActiveView(m.about)
+}
+
 func (m *main) btnSettingsClick(*gowd.Element, *gowd.EventElement) {
 	m.setActiveView(m.settings)
 }
@@ -122,8 +121,13 @@ func (m *main) btnBackupClick(*gowd.Element, *gowd.EventElement) {
 }
 
 func (m *main) setActiveView(view view) {
-	m.popluateMenu(view)
 	view.updateState()
+
+	m.menu.TopLeft.RemoveElements()
+	if view != nil {
+		view.populateToolbar(m.menu)
+	}
+
 	m.content.RemoveElements()
 	m.content.AddElement(view.getContent())
 }

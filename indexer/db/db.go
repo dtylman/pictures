@@ -240,6 +240,9 @@ func Remove(keys []string) error {
 	return tx.Commit()
 }
 
+func Stats() string{
+
+}
 
 //WalkImagesFunc defines a callback to scan alll images in database (use with WalkImages)
 type WalkImagesFunc func(key string, image *picture.Index, err error)

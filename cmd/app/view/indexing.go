@@ -47,7 +47,7 @@ func (iv *indexingView) updateState() {
 }
 
 func (iv *indexingView) populateToolbar(menu*darktheme.Menu) {
-	menu.AddTopButton("Stop", "fa fa-stop", iv.btnStopClicked)
+	menu.AddButton(menu.TopLeft,"Stop", "fa fa-stop", iv.btnStopClicked)
 }
 
 func (iv *indexingView) updateIndexerProgress(status tasklog.Task) {

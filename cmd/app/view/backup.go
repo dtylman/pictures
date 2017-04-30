@@ -57,8 +57,8 @@ func (bv *backupView) updateState() {
 }
 
 func (bv *backupView) populateToolbar(menu*darktheme.Menu) {
-	bv.btnStart = menu.AddTopButton("Start", "fa fa-start", bv.btnStartClick)
-	bv.btnStop = menu.AddTopButton("Stop", "fa fa-stop", bv.btnStopClicked)
+	bv.btnStart = menu.AddButton(menu.TopLeft,"Start", "fa fa-play", bv.btnStartClick)
+	bv.btnStop = menu.AddButton(menu.TopLeft,"Stop", "fa fa-stop", bv.btnStopClicked)
 }
 
 func (bv *backupView) getContent() *gowd.Element {

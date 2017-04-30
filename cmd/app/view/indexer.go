@@ -67,7 +67,7 @@ func newIndexerView() *indexerView {
 }
 
 func (i*indexerView) populateToolbar(menu*darktheme.Menu) {
-	menu.AddTopButton("Start", "fa fa-start", i.btnStartClicked)
+	menu.AddButton(menu.TopLeft,"Start", "fa fa-play", i.btnStartClicked)
 }
 
 func (i *indexerView) getContent() *gowd.Element {

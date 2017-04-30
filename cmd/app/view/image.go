@@ -22,10 +22,8 @@ func newImage() *image {
 }
 
 func (i *image) populateToolbar(menu*darktheme.Menu) {
-	btn := menu.AddTopButton("Prev", "fa fa-previous", i.btnPrevClicked)
-	btn.SetClass("btn-info")
-	btn = menu.AddTopButton("Next", "fa fa-next", i.btnNextClicked)
-	btn.SetClass("btn-info")
+	menu.AddButton(menu.TopLeft,"Prev", "fa fa-arrow-left", i.btnPrevClicked)
+	menu.AddButton(menu.TopLeft,"Next", "fa fa-arrow-right", i.btnNextClicked)
 }
 
 func (i *image) btnPrevClicked(sender *gowd.Element, event *gowd.EventElement) {

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/tiff"
-	"github.com/syndtr/goleveldb/leveldb/errors"
+	"errors"
 	"io"
 
 	"os"
