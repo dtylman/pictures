@@ -20,6 +20,9 @@ type runner struct {
 }
 
 func (r*runner) checkImage(key string, image *picture.Index, err error) {
+	if !r.Running{
+		return
+	}
 	if err != nil {
 		log.Println(err)
 		return
@@ -62,6 +65,10 @@ func (r*runner) copyFiles() error {
 	total := len(r.items)
 	i := 0
 	for _, item := range r.items {
+		if !r.Running{
+			log.Println("Runner stopped before done")
+			break
+		}
 		fileName := item.Sources[0]
 		tasklog.Status(tasklog.BackuperTask, true, i, total, fmt.Sprintf("Copying %s", fileName))
 		if r.fileExists(fileName, item.Target) {
@@ -73,6 +80,8 @@ func (r*runner) copyFiles() error {
 		}
 		i++
 	}
+	tasklog.Status(tasklog.BackuperTask, true, i, total, "Saving journal....")
+
 	data, err := json.MarshalIndent(r.items, "", "  ")
 	if err != nil {
 		return err

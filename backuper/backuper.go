@@ -1,13 +1,13 @@
 package backuper
 
 import (
-	"sync"
 	"errors"
+	"sync"
 )
 
 var (
 	backupRunner runner
-	mutex sync.Mutex
+	mutex        sync.Mutex
 )
 
 //IsRunning returns true if the backuper process is now running
@@ -23,11 +23,12 @@ func Start() error {
 	if backupRunner.Running {
 		return errors.New("Already running")
 	}
+	backupRunner.Running = true
 	go backupRunner.run()
 	return nil
 }
 
-func Stop()  {
+func Stop() {
 	mutex.Lock()
 	defer mutex.Unlock()
 	backupRunner.stop()

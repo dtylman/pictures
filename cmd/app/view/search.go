@@ -41,8 +41,12 @@ func newSearchView() *search {
 		panic(err)
 	}
 	pnlSubtitle := s.Find("pnlSubtitle")
-
-	pnlSubtitle.AddElement(gowd.NewText(db.Stats())
+	stats,err:=db.Stats()
+	if err != nil {
+		Root.addAlertError(err)
+	} else {
+		pnlSubtitle.AddElement(gowd.NewText(stats))
+	}
 	pnlSearch := s.Find("pnlSearch")
 	s.inputSearch = bootstrap.NewInput(bootstrap.InputTypeText)
 	s.inputSearch.SetClass("form-control input-lg")
