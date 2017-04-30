@@ -6,8 +6,8 @@ import (
 
 type Menu struct {
 	*gowd.Element
-	top  *gowd.Element
-	side *gowd.Element
+	Top  *gowd.Element
+	Side *gowd.Element
 }
 
 func NewMenu() *Menu {
@@ -31,8 +31,8 @@ func NewMenu() *Menu {
             		</div>
         	</nav>`)
 
-	m.side = m.Kids[3].Kids[1]
-	m.top = m.Kids[3].Kids[3]
+	m.Side = m.Kids[3].Kids[1]
+	m.Top = m.Kids[3].Kids[3]
 	return m
 }
 
@@ -56,9 +56,9 @@ func (m*Menu) addButton(submenu*gowd.Element, caption string, icon string, handl
 }
 
 func (m*Menu) AddTopButton(caption string, icon string, handler gowd.EventHandler) *gowd.Element {
-	return m.addButton(m.top, caption, icon, handler)
+	return m.addButton(m.Top, caption, icon, handler)
 }
 
 func (m*Menu) AddSideButton(caption string, icon string, handler gowd.EventHandler) *gowd.Element {
-	return m.addButton(m.side, caption, icon, handler)
+	return m.addButton(m.Side, caption, icon, handler)
 }

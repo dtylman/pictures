@@ -5,6 +5,7 @@ import (
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
 	"github.com/dtylman/pictures/indexer/picture"
+	"github.com/dtylman/pictures/cmd/app/view/darktheme"
 )
 
 type image struct {
@@ -20,15 +21,11 @@ func newImage() *image {
 	return i
 }
 
-func (i *image) populateToolbar(toolbar *gowd.Element) {
-	btnPrev := bootstrap.NewButton(bootstrap.ButtonDefault, "Prev")
-	btnPrev.OnEvent(gowd.OnClick, i.btnPrevClicked)
-	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 1, btnPrev))
-
-	btnNext := bootstrap.NewButton(bootstrap.ButtonDefault, "Next")
-	btnNext.OnEvent(gowd.OnClick, i.btnNextClicked)
-	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 1, btnNext))
-
+func (i *image) populateToolbar(menu*darktheme.Menu) {
+	btn := menu.AddTopButton("Prev", "fa fa-previous", i.btnPrevClicked)
+	btn.SetClass("btn-info")
+	btn = menu.AddTopButton("Next", "fa fa-next", i.btnNextClicked)
+	btn.SetClass("btn-info")
 }
 
 func (i *image) btnPrevClicked(sender *gowd.Element, event *gowd.EventElement) {

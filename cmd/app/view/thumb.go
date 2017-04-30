@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"github.com/dtylman/pictures/model"
 	"github.com/dtylman/gowd/bootstrap"
+	"github.com/dtylman/pictures/cmd/app/view/darktheme"
 )
 
 type thumb struct {
@@ -55,33 +56,31 @@ func (t*thumb) updateState() {
 		}
 	}
 
-	//build the pagination
-	pagination := bootstrap.NewPagination()
-	btn := bootstrap.NewLinkButton("<<")
-	btn.OnEvent(gowd.OnClick, t.btnPrevClick)
-	pagination.Items.AddItem(btn)
-	activePage := activeSearch.Pages.ActivePage()
-	for pageOrder, page := range activeSearch.Pages {
-		if pageOrder > (activePage - 7) && pageOrder < (activePage + 7) {
-			btn := bootstrap.NewLinkButton(page.Caption)
-			btn.Object = page
-			btn.OnEvent(gowd.OnClick, t.btnPageClick)
-			item := pagination.Items.AddItem(btn)
-			if page.Active {
-				item.SetClass("active")
-			}
-		}
-
-	}
-	btn = bootstrap.NewLinkButton(">>")
-	btn.OnEvent(gowd.OnClick, t.btnNextClick)
-	pagination.Items.AddItem(btn)
 
 	//// facets
 	//t.facets.RemoveElements()
 	//for _, facet := range activeSearch.Facets {
 	//	t.facets.AddOption(fmt.Sprintf("%s (%d)", facet.Term, facet.Count), facet.Term)
 	//}
+}
+
+func (t*thumb) populateToolbar(menu*darktheme.Menu) {
+	//build the pagination
+	menu.AddTopButton("<<", "fa fa-prev", t.btnPrevClick)
+	if activeSearch != nil {
+		activePage := activeSearch.Pages.ActivePage()
+		for pageOrder, page := range activeSearch.Pages {
+			if pageOrder > (activePage - 7) && pageOrder < (activePage + 7) {
+				btn := menu.AddTopButton(page.Caption, "", t.btnPageClick)
+				btn.Object = page
+				if page.Active {
+					btn.SetClass("active")
+				}
+			}
+
+		}
+		menu.AddTopButton(">>", "fa fa-next", t.btnNextClick)
+	}
 }
 
 func (t*thumb) getContent() *gowd.Element {

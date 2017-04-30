@@ -8,12 +8,19 @@ import (
 	"github.com/dtylman/pictures/model"
 )
 
-var activeSearch *model.Search
+var (
+	Root *main
+	activeSearch *model.Search
+)
+
+func InitializeComponents() {
+	Root = newMain()
+}
 
 type main struct {
 	*gowd.Element
 
-	menu     *gowd.Element
+	menu     *darktheme.Menu
 
 	alerts   *darktheme.Alerts
 
@@ -36,31 +43,9 @@ func newMain() *main {
 	m.Element.SetID("wrapper")
 
 	// menu
-	menu := darktheme.NewMenu()
-	menu.AddSideButton("Search", "fa fa-search", m.btnSearchClick)
-	//search, google style
-	menu.AddSideButton("Browse", "fa fa-list", m.btnSearchClick)
-	//albums, locations, timeline (?)
-	menu.AddSideButton("Thumbs", "fa fa-image", m.btnThumbClick)
-	//show search results in thumbs
-	menu.AddSideButton("Actions", "fa fa-cog", m.btnSearchClick)
-	//show table with search results, something you can work on
-	menu.AddSideButton("Faces", "fa fa-user", m.btnSearchClick)
-	//show and manage faces
-	menu.AddSideButton("Index", "fa fa-database", m.btnIndexClick)
-	//do the indexing
-	menu.AddSideButton("Manage", "fa fa-adjust", m.btnBackupClick)
-	//backup, restore, remove_from_source
-	menu.AddSideButton("Settings", "fa fa-gears", m.btnSettingsClick)
-	//about
-	menu.AddTopButton("About", "fa fa-question", m.btnSettingsClick)
-
-	m.menu = menu.Element
-
-	btn := menu.AddTopButton("Close", "fa fa-close", nil)
-	btn.SetAttribute("onclick", "window.close()")
-
-	m.AddElement(menu.Element)
+	m.menu = darktheme.NewMenu()
+	m.AddElement(m.menu.Element)
+	m.popluateMenu(nil)
 
 	m.alerts = darktheme.NewAlerts()
 	m.AddElement(bootstrap.NewContainer(true, m.alerts.Element))
@@ -80,6 +65,38 @@ func newMain() *main {
 	return m
 }
 
+func (m*main) popluateMenu(view view) {
+	m.menu.Top.RemoveElements()
+	m.menu.Side.RemoveElements()
+
+	// build static buttons...
+	m.menu.AddSideButton("Search", "fa fa-search", m.btnSearchClick)
+	//search, google style
+	m.menu.AddSideButton("Browse", "fa fa-list", m.btnSearchClick)
+	//albums, locations, timeline (?)
+	m.menu.AddSideButton("Thumbs", "fa fa-image", m.btnThumbClick)
+	//show search results in thumbs
+	m.menu.AddSideButton("Actions", "fa fa-cog", m.btnSearchClick)
+	//show table with search results, something you can work on
+	m.menu.AddSideButton("Faces", "fa fa-user", m.btnSearchClick)
+	//show and manage faces
+	m.menu.AddSideButton("Index", "fa fa-database", m.btnIndexClick)
+	//do the indexing
+	m.menu.AddSideButton("Manage", "fa fa-adjust", m.btnBackupClick)
+	//backup, restore, remove_from_source
+	m.menu.AddSideButton("Settings", "fa fa-gears", m.btnSettingsClick)
+
+	//about
+	m.menu.AddSideButton("About", "fa fa-question", m.btnSettingsClick)
+
+	if view != nil {
+		view.populateToolbar(m.menu)
+	}
+
+	btn := m.menu.AddTopButton("Close", "fa fa-close", nil)
+	btn.SetAttribute("onclick", "window.close()")
+
+}
 func (m *main) btnSearchClick(*gowd.Element, *gowd.EventElement) {
 	m.setActiveView(m.search)
 }
@@ -105,6 +122,7 @@ func (m *main) btnBackupClick(*gowd.Element, *gowd.EventElement) {
 }
 
 func (m *main) setActiveView(view view) {
+	m.popluateMenu(view)
 	view.updateState()
 	m.content.RemoveElements()
 	m.content.AddElement(view.getContent())

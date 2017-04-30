@@ -5,6 +5,7 @@ import (
 	"github.com/dtylman/gowd/bootstrap"
 	"github.com/dtylman/pictures/conf"
 	"github.com/dtylman/pictures/indexer"
+	"github.com/dtylman/pictures/cmd/app/view/darktheme"
 )
 
 //<a href="https://developer.mapquest.com/plan_purchase/steps/business_edition/business_edition_free/register">MapQuest </a>Key:
@@ -12,7 +13,6 @@ import (
 type indexerView struct {
 	*gowd.Element
 
-	btnStart      *gowd.Element
 	btnAddFolder  *bootstrap.FileButton
 	chkLocation   *bootstrap.Checkbox
 	chkDeleteDB   *bootstrap.Checkbox
@@ -40,9 +40,6 @@ func newIndexerView() *indexerView {
 	i.inputMapQuest.SetPlaceHolder("API KEY...")
 	i.inputMapQuest.OnEvent(gowd.OnChange, i.inputMapChanged)
 
-	i.btnStart = bootstrap.NewButton(bootstrap.ButtonPrimary, "Start")
-	i.btnStart.OnEvent(gowd.OnClick, i.btnStartClicked)
-
 	i.btnAddFolder = bootstrap.NewFileButton(bootstrap.ButtonDefault, "Add folder", true)
 	i.btnAddFolder.OnChange(i.btnAddFolderChanged)
 
@@ -69,12 +66,12 @@ func newIndexerView() *indexerView {
 	return i
 }
 
-func (i *indexerView) getContent() *gowd.Element {
-	return i.Element
+func (i*indexerView) populateToolbar(menu*darktheme.Menu) {
+	menu.AddTopButton("Start", "fa fa-start", i.btnStartClicked)
 }
 
-func (i *indexerView) populateToolbar(toolbar *gowd.Element) {
-	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 1, i.btnStart))
+func (i *indexerView) getContent() *gowd.Element {
+	return i.Element
 }
 
 func (i *indexerView) updateState() {

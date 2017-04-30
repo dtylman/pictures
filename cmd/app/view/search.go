@@ -4,6 +4,7 @@ import (
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
 	"github.com/dtylman/pictures/model"
+	"github.com/dtylman/pictures/cmd/app/view/darktheme"
 )
 
 type search struct {
@@ -66,6 +67,9 @@ func (s *search) getContent() *gowd.Element {
 	return s.Element
 }
 
+func (s*search) populateToolbar(menu*darktheme.Menu) {
+
+}
 func (s *search) btnDuplicatesClick(sender *gowd.Element, event *gowd.EventElement) {
 
 }

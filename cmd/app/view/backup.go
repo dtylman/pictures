@@ -7,6 +7,7 @@ import (
 	"github.com/dtylman/pictures/backuper"
 	"github.com/dtylman/pictures/tasklog"
 	"fmt"
+	"github.com/dtylman/pictures/cmd/app/view/darktheme"
 )
 
 type backupView struct {
@@ -55,9 +56,9 @@ func (bv *backupView) updateState() {
 	}
 }
 
-func (bv *backupView) populateToolbar(toolbar *gowd.Element) {
-	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 1, bv.btnStart))
-	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 1, bv.btnStop))
+func (bv *backupView) populateToolbar(menu*darktheme.Menu) {
+	bv.btnStart = menu.AddTopButton("Start", "fa fa-start", bv.btnStartClick)
+	bv.btnStop = menu.AddTopButton("Stop", "fa fa-stop", bv.btnStopClicked)
 }
 
 func (bv *backupView) getContent() *gowd.Element {
