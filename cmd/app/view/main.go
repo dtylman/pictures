@@ -124,6 +124,7 @@ func (m *main) setActiveView(view view) {
 	view.updateState()
 
 	m.menu.TopLeft.RemoveElements()
+
 	if view != nil {
 		view.populateToolbar(m.menu)
 	}

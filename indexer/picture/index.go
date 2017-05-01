@@ -115,6 +115,10 @@ func (i *Index) populateMD5(file *os.File) error {
 func (i*Index) ExifString() string {
 	return fmt.Sprintf("%v", i.Exif)
 }
+
+func (i*Index) Name() string{
+	return filepath.Base(i.Path)
+}
 //MimeIs return true if mime type is one of the provided array
 func MimeIs(mimeType string, pictureType ...string) bool {
 	base := strings.Split(mimeType, "/")[0]

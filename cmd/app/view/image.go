@@ -24,6 +24,11 @@ func newImage() *image {
 func (i *image) populateToolbar(menu*darktheme.Menu) {
 	menu.AddButton(menu.TopLeft,"Prev", "fa fa-arrow-left", i.btnPrevClicked)
 	menu.AddButton(menu.TopLeft,"Next", "fa fa-arrow-right", i.btnNextClicked)
+	menu.AddButton(menu.TopLeft,"Back", "fa fa-undo",i.btnBackClicked)
+}
+
+func (i *image) btnBackClicked(sender *gowd.Element, event *gowd.EventElement) {
+	Root.setActiveView(Root.thumb)
 }
 
 func (i *image) btnPrevClicked(sender *gowd.Element, event *gowd.EventElement) {

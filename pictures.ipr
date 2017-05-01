@@ -669,11 +669,17 @@
   <component name="libraryTable">
     <library name="GOPATH &lt;pictures&gt;">
       <CLASSES>
+        <root url="file://$PROJECT_DIR$/../../../gopkg.in" />
         <root url="file://$PROJECT_DIR$/../.." />
+        <root url="file://$PROJECT_DIR$/../../../golang.org" />
+        <root url="file://$PROJECT_DIR$/../../../bitbucket.org" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
+        <root url="file://$PROJECT_DIR$/../../../gopkg.in" />
         <root url="file://$PROJECT_DIR$/../.." />
+        <root url="file://$PROJECT_DIR$/../../../golang.org" />
+        <root url="file://$PROJECT_DIR$/../../../bitbucket.org" />
       </SOURCES>
       <excluded>
         <root url="file://$PROJECT_DIR$" />

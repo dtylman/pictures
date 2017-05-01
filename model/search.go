@@ -4,11 +4,10 @@ import (
 	"github.com/dtylman/pictures/conf"
 	"github.com/dtylman/pictures/indexer/db"
 	"github.com/dtylman/pictures/indexer/picture"
-	"github.com/dtylman/pictures/indexer/thumbs"
-	"log"
 	"sort"
 	"strconv"
 	"strings"
+	"log"
 )
 
 type ThumbItem struct {
@@ -22,9 +21,7 @@ type Search struct {
 	start       int
 	Results     []*picture.Index
 	ActiveImage *picture.Index
-	Pages       Pages
 	Facets      Facets
-	Thumbs      []ThumbItem
 }
 
 func NewSearch(query string) (*Search, error) {
@@ -71,8 +68,6 @@ func (s *Search) NextPage() {
 	}
 	s.start += conf.Options.SearchPageSize
 	s.SetActiveImage(0)
-	s.buildPages()
-	s.buildThumbs()
 }
 
 func (s *Search) PrevPage() {
@@ -83,8 +78,6 @@ func (s *Search) PrevPage() {
 	}
 	s.start = from
 	s.SetActiveImage(0)
-	s.buildPages()
-	s.buildThumbs()
 }
 
 func (s *Search) doQuery() error {
@@ -102,24 +95,20 @@ func (s *Search) doQuery() error {
 	s.start = 0
 	s.hit = 0
 	s.buildFacetItems()
-	s.buildPages()
-	s.buildThumbs()
 	return nil
 }
 
-func (s *Search) buildPages() {
-	if conf.Options.SearchPageSize == 0 {
-		s.Pages = make(Pages, 0)
-		return
-	}
+func (s *Search) Pages() Pages{
 	pageCount := s.Total() / conf.Options.SearchPageSize
 	fromPage := s.start / conf.Options.SearchPageSize
-	s.Pages = make(Pages, pageCount)
+	pages := make(Pages, pageCount)
 	for i := 0; i < pageCount; i++ {
-		s.Pages[i].Start = i * conf.Options.SearchPageSize
-		s.Pages[i].Active = (i == fromPage)
-		s.Pages[i].Caption = strconv.Itoa(s.Pages[i].Start)
+		pages[i].Start = i * conf.Options.SearchPageSize
+		pages[i].Active = (i == fromPage)
+		pages[i].Caption = strconv.Itoa(pages[i].Start)
 	}
+	log.Println(pages, s.start)
+	return pages
 }
 
 func (s *Search) buildFacetItems() {
@@ -142,32 +131,30 @@ func (s *Search) buildFacetItems() {
 	}
 }
 
-func (s *Search) buildThumbs() {
-	thumbsCount := s.Total()
-	if thumbsCount > conf.Options.SearchPageSize {
-		thumbsCount = conf.Options.SearchPageSize
-	}
-	s.Thumbs = make([]ThumbItem, thumbsCount)
-	for i := 0; i < thumbsCount; i++ {
-		if s.start+i >= s.Total() {
-			break
-		}
-		s.Thumbs[i].MD5 = s.Results[s.start+i].MD5
-		var err error
-		s.Thumbs[i].Path, err = thumbs.MakeThumb(s.Results[s.start+i].Path, s.Thumbs[i].MD5, false)
-		if err != nil {
-			log.Println(err)
-		}
-	}
-
-}
+//func (s *Search) buildThumbs() {
+//	thumbsCount := s.Total()
+//	if thumbsCount > conf.Options.SearchPageSize {
+//		thumbsCount = conf.Options.SearchPageSize
+//	}
+//	s.Thumbs = make([]ThumbItem, thumbsCount)
+//	for i := 0; i < thumbsCount; i++ {
+//		if s.start+i >= s.Total() {
+//			break
+//		}
+//		s.Thumbs[i].MD5 = s.Results[s.start+i].MD5
+//		var err error
+//		s.Thumbs[i].Path, err = thumbs.MakeThumb(s.Results[s.start+i].Path, s.Thumbs[i].MD5, false)
+//		if err != nil {
+//			log.Println(err)
+//		}
+//	}
+//
+//}
 
 func (s *Search) StartFrom(start int) {
 	if start <= s.Total() {
 		s.start = start
 		s.SetActiveImage(0)
-		s.buildPages()
-		s.buildThumbs()
 	}
 }
 
@@ -176,4 +163,16 @@ func (s *Search) Total() int {
 		return len(s.Results)
 	}
 	return 0
+}
+
+func (s* Search) Page() []*picture.Index{
+	count:=s.Total()-s.start
+	if count>conf.Options.SearchPageSize{
+		count=conf.Options.SearchPageSize
+	}
+	items:=make([]*picture.Index,count)
+	for i:=0;i<count;i++{
+		items[i]=s.Results[i+s.start]
+	}
+	return items
 }

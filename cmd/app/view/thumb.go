@@ -1,22 +1,26 @@
 package view
 
 import (
+	"fmt"
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
 	"github.com/dtylman/pictures/cmd/app/view/darktheme"
+	"github.com/dtylman/pictures/indexer/thumbs"
 	"github.com/dtylman/pictures/model"
-	"path/filepath"
+	"log"
 )
 
 type thumb struct {
 	*gowd.Element
-	thumbs *gowd.Element
+	thumbs     *gowd.Element
+	pagination *bootstrap.Pagination
 }
 
 func newThumbView() *thumb {
 	t := new(thumb)
 	t.Element = gowd.NewElement("div")
 	t.thumbs = gowd.NewElement("div")
+	t.pagination = bootstrap.NewPagination()
 	t.AddElement(t.thumbs)
 	return t
 }
@@ -42,19 +46,46 @@ func (t *thumb) updateState() {
 	</div>*/
 	t.thumbs.RemoveElements()
 	row := bootstrap.NewElement("div", "row")
-	for i, thumb := range activeSearch.Thumbs {
+	for i, image := range activeSearch.Page() {
+		thumbPath, err := thumbs.MakeThumb(image.Path, image.MD5, false)
+		if err != nil {
+			log.Println(err)
+		}
 		img := bootstrap.NewElement("img", "thumbnail img-responsive")
-		img.SetAttribute("src", "file:///"+thumb.Path)
+		img.SetAttribute("src", "file:///"+thumbPath)
 		img.OnEvent(gowd.OnClick, t.thumbClick)
 		img.Object = i
 		span := gowd.NewElement("span")
-		span.AddElement(gowd.NewText(filepath.Base(thumb.Path)))
+		span.AddElement(gowd.NewText(fmt.Sprintf("%s (%s)", image.Name(), image.Album)))
 		row.AddElement(bootstrap.NewColumn(bootstrap.ColumnMedium, 3, bootstrap.NewElement("div", "well", img, span)))
 		if i%4 == 3 {
 			t.thumbs.AddElement(row)
 			row = bootstrap.NewElement("div", "row")
 		}
 	}
+
+	//build the pagination
+	t.pagination.Items.RemoveElements()
+
+	btn := t.pagination.AddItem("", false, t.btnPrevClick)
+	icon := gowd.NewElement("i")
+	icon.SetClass("fa fa-arrow-left")
+	btn.AddElement(icon)
+
+	pages := activeSearch.Pages()
+	activePage := pages.ActivePage()
+	for pageOrder, page := range pages {
+		if pageOrder > (activePage-7) && pageOrder < (activePage+7) {
+			item := t.pagination.AddItem(page.Caption, page.Active, t.btnPageClick)
+			item.Object = page
+		}
+
+	}
+
+	btn = t.pagination.AddItem("", false, t.btnNextClick)
+	icon = gowd.NewElement("i")
+	icon.SetClass("fa fa-arrow-right")
+	btn.AddElement(icon)
 
 	//// facets
 	//t.facets.RemoveElements()
@@ -64,21 +95,8 @@ func (t *thumb) updateState() {
 }
 
 func (t *thumb) populateToolbar(menu *darktheme.Menu) {
-	//build the pagination
-	menu.AddButton(menu.TopLeft, "", "fa fa-arrow-left", t.btnPrevClick)
 	if activeSearch != nil {
-		activePage := activeSearch.Pages.ActivePage()
-		for pageOrder, page := range activeSearch.Pages {
-			if pageOrder > (activePage-7) && pageOrder < (activePage+7) {
-				btn := menu.AddButton(menu.TopLeft, page.Caption, "", t.btnPageClick)
-				btn.Object = page
-				if page.Active {
-					btn.SetClass("active")
-				}
-			}
-
-		}
-		menu.AddButton(menu.TopLeft, "", "fa fa-arrow-right", t.btnNextClick)
+		menu.TopLeft.AddElement(t.pagination.Element)
 	}
 }
 
