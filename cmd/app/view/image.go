@@ -57,7 +57,6 @@ func (i *image) updateState() {
 		vid.SetAttribute("src", fmt.Sprintf("file:///%s", activeSearch.ActiveImage.Path))
 		vid.SetAttribute("type", mimeType)
 		col.AddElement(vid)
-
 	}
 
 	table := bootstrap.NewTable(bootstrap.TableStripped)

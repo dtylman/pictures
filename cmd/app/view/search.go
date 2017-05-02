@@ -76,6 +76,7 @@ func (s *search) getContent() *gowd.Element {
 func (s*search) populateToolbar(menu*darktheme.Menu) {
 
 }
+
 func (s *search) btnDuplicatesClick(sender *gowd.Element, event *gowd.EventElement) {
 
 }

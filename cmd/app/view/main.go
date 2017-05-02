@@ -29,11 +29,12 @@ type main struct {
 	//views
 	search   view
 	thumb    view
+	table    view
 	indexer  view
 	indexing view
 	backup   view
 	settings view
-	about view
+	about    view
 }
 
 func newMain() *main {
@@ -58,6 +59,7 @@ func newMain() *main {
 	//views
 	m.search = newSearchView()
 	m.thumb = newThumbView()
+	m.table = newTableView()
 	m.indexer = newIndexerView()
 	m.indexing = newIndexingView()
 	m.backup = newBackupView()
@@ -75,7 +77,7 @@ func (m *main) popluateMenu() {
 	//albums, locations, timeline (?)
 	m.menu.AddButton(m.menu.Side, "Thumbs", "fa fa-image", m.btnThumbClick)
 	//show search results in thumbs
-	m.menu.AddButton(m.menu.Side, "Actions", "fa fa-cog", m.btnSearchClick)
+	m.menu.AddButton(m.menu.Side, "Actions", "fa fa-cog", m.btnTableClick)
 	//show table with search results, something you can work on
 	m.menu.AddButton(m.menu.Side, "Faces", "fa fa-user", m.btnSearchClick)
 	//show and manage faces
@@ -98,6 +100,10 @@ func (m *main) btnSearchClick(*gowd.Element, *gowd.EventElement) {
 
 func (m *main) btnThumbClick(*gowd.Element, *gowd.EventElement) {
 	m.setActiveView(m.thumb)
+}
+
+func (m *main) btnTableClick(*gowd.Element, *gowd.EventElement) {
+	m.setActiveView(m.table)
 }
 
 func (m *main) btnIndexClick(sender *gowd.Element, e *gowd.EventElement) {
