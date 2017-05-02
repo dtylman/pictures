@@ -20,11 +20,11 @@ func InitializeComponents() {
 type main struct {
 	*gowd.Element
 
-	menu *darktheme.Menu
+	menu     *darktheme.Menu
 
-	alerts *darktheme.Alerts
+	alerts   *darktheme.Alerts
 
-	content *gowd.Element
+	content  *gowd.Element
 
 	//views
 	search   view
@@ -32,7 +32,7 @@ type main struct {
 	table    view
 	indexer  view
 	indexing view
-	backup   view
+	manage   view
 	settings view
 	about    view
 }
@@ -62,7 +62,7 @@ func newMain() *main {
 	m.table = newTableView()
 	m.indexer = newIndexerView()
 	m.indexing = newIndexingView()
-	m.backup = newBackupView()
+	m.manage = newManageView()
 	m.settings = newSettingsView()
 	m.about = newAboutView()
 
@@ -123,7 +123,7 @@ func (m *main) btnSettingsClick(*gowd.Element, *gowd.EventElement) {
 }
 
 func (m *main) btnBackupClick(*gowd.Element, *gowd.EventElement) {
-	m.setActiveView(m.backup)
+	m.setActiveView(m.manage)
 }
 
 func (m *main) setActiveView(view view) {
