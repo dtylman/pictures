@@ -43,7 +43,7 @@ func newSearchView() *search {
 	pnlSubtitle := s.Find("pnlSubtitle")
 	stats, err := db.Stats()
 	if err != nil {
-		Root.addAlertError(err)
+		panic(err)
 	} else {
 		pnlSubtitle.AddElement(gowd.NewText(stats))
 	}

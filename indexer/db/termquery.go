@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+
 	"github.com/dtylman/pictures/indexer/picture"
 )
 
@@ -26,19 +27,18 @@ func (tq *TermQuery) Query() error {
 	} else {
 		operator = fmt.Sprintf(` LIKE '%%%s%%' `, tq.term)
 	}
-	sql := `SELECT DISTINCT picture.md5,
-	mime_type, file.path, taken, lat, long,	location, album, objects, faces
-	FROM picture JOIN file ON file.md5=picture.md5
-	WHERE
-	picture.mime_type ` + operator + ` OR
-	file.path ` + operator + ` OR
-	location ` + operator + ` OR
-	album ` + operator + ` OR
-	objects ` + operator + ` OR
-	faces` + operator + `
-	ORDER BY picture.taken, file.time `
+	sql := `SELECT DISTINCT 
+			md5, mime_type,	path,
+			taken, lat, long, location, album, objects, faces 
+			FROM images_view 
+			WHERE mime_type ` + operator +
+		` OR path ` + operator +
+		` OR location ` + operator +
+		` OR album ` + operator +
+		` OR objects ` + operator +
+		` OR faces` + operator
 	if tq.limit > 0 {
-		sql += fmt.Sprintf("LIMIT %d", tq.limit)
+		sql += fmt.Sprintf(" LIMIT %d", tq.limit)
 	}
 	if !tq.exact {
 		sql += ` COLLATE NOCASE`

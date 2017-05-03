@@ -3,9 +3,10 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"github.com/dtylman/pictures/indexer/picture"
 	"log"
 	"time"
+
+	"github.com/dtylman/pictures/indexer/picture"
 )
 
 const (
@@ -255,9 +256,10 @@ type WalkImagesFunc func(key string, image *picture.Index, err error)
 
 //WalkImages executes function for all images in the database
 func WalkImages(wf WalkImagesFunc) {
-	rows, err := sqldb.Query(`SELECT DISTINCT picture.md5,
-			mime_type, file.path, taken, lat, long,	location, album, objects, faces
-			FROM picture JOIN file ON file.md5=picture.md5`)
+	rows, err := sqldb.Query(`SELECT DISTINCT 
+			md5, mime_type,	path,
+			taken, lat, long, location, album, objects, faces 
+			FROM images_view`)
 	if err != nil {
 		wf("", nil, err)
 		return
@@ -271,12 +273,21 @@ func WalkImages(wf WalkImagesFunc) {
 
 func rows2Image(rows *sql.Rows) (*picture.Index, error) {
 	var image picture.Index
+	var lat, long *float64
 	var taken int64
-	err := rows.Scan(&image.MD5, &image.MimeType, &image.Path, &taken, &image.Lat,
-		&image.Long, &image.Location, &image.Album, &image.Objects, &image.Faces)
+	err := rows.Scan(&image.MD5, &image.MimeType, &image.Path, &taken, &lat,
+		&long, &image.Location, &image.Album, &image.Objects, &image.Faces)
 	if err != nil {
+		log.Println(err, rows)
 		return nil, err
 	}
-	image.Taken = time.Unix(taken, 0)
+	if lat != nil {
+		image.Lat = *lat
+	}
+	if long != nil {
+		image.Long = *long
+	}
+	image.Taken = time.Unix(int64(taken), 0)
+
 	return &image, nil
 }
