@@ -1,15 +1,12 @@
 package view
 
-import "github.com/dtylman/gowd"
+import (
+	"github.com/dtylman/gowd"
+	"github.com/dtylman/pictures/cmd/app/view/darktheme"
+)
 
 type view interface {
-	populateToolbar(toolbar *gowd.Element)
 	updateState()
 	getContent() *gowd.Element
-}
-
-var Root *main
-
-func InitializeComponents() {
-	Root = newMain()
+	populateToolbar(menu *darktheme.Menu)
 }

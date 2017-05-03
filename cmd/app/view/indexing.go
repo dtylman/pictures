@@ -1,18 +1,18 @@
 package view
 
 import (
+	"fmt"
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
+	"github.com/dtylman/pictures/cmd/app/view/darktheme"
 	"github.com/dtylman/pictures/indexer"
 	"github.com/dtylman/pictures/tasklog"
-	"fmt"
 )
 
 type indexingView struct {
 	*gowd.Element
 	pnlStatus   *bootstrap.Panel
 	progressBar *bootstrap.ProgressBar
-	btnStop     *gowd.Element
 }
 
 func newIndexingView() *indexingView {
@@ -24,8 +24,6 @@ func newIndexingView() *indexingView {
 
 	iv.progressBar = bootstrap.NewProgressBar()
 	iv.progressBar.SetAttribute("style", "height: 40px")
-	iv.btnStop = bootstrap.NewButton(bootstrap.ButtonPrimary, "Stop")
-	iv.btnStop.OnEvent(gowd.OnClick, iv.btnStopClicked)
 
 	iv.AddElement(iv.pnlStatus.Element)
 	iv.AddElement(gowd.NewStyledText("Progress:", gowd.Paragraph))
@@ -38,7 +36,6 @@ func newIndexingView() *indexingView {
 
 func (iv *indexingView) btnStopClicked(sender *gowd.Element, event *gowd.EventElement) {
 	indexer.Stop()
-	iv.btnStop.Disable()
 }
 
 func (iv *indexingView) updateState() {
@@ -46,13 +43,11 @@ func (iv *indexingView) updateState() {
 		iv.progressBar.SetText("")
 		iv.progressBar.SetValue(0, 0)
 		Root.setActiveView(Root.indexer)
-	} else {
-		iv.btnStop.Enable()
 	}
 }
 
-func (iv *indexingView) populateToolbar(toolbar *gowd.Element) {
-	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 1, iv.btnStop))
+func (iv *indexingView) populateToolbar(menu *darktheme.Menu) {
+	menu.AddButton(menu.TopLeft, "Stop", "fa fa-stop", iv.btnStopClicked)
 }
 
 func (iv *indexingView) updateIndexerProgress(status tasklog.Task) {

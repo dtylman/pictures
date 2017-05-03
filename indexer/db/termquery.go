@@ -1,8 +1,8 @@
 package db
 
 import (
-	"github.com/dtylman/pictures/indexer/picture"
 	"fmt"
+	"github.com/dtylman/pictures/indexer/picture"
 )
 
 type TermQuery struct {
@@ -15,10 +15,10 @@ type TermQuery struct {
 const NOLIMIT = 0
 
 func NewTermQuery(term string, exact bool, limit int) *TermQuery {
-	return &TermQuery{term:term, exact:exact, limit: limit}
+	return &TermQuery{term: term, exact: exact, limit: limit}
 }
 
-func (tq*TermQuery) Query() error {
+func (tq *TermQuery) Query() error {
 	tq.res = make([]*picture.Index, 0)
 	var operator string
 	if tq.exact {
@@ -58,6 +58,6 @@ func (tq*TermQuery) Query() error {
 	return nil
 }
 
-func (tq*TermQuery) Results() []*picture.Index {
+func (tq *TermQuery) Results() []*picture.Index {
 	return tq.res
 }

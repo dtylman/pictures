@@ -1,10 +1,10 @@
 package picture
 
 import (
-	"testing"
 	"github.com/stretchr/testify/assert"
-	"path/filepath"
 	"os"
+	"path/filepath"
+	"testing"
 )
 
 func TestQueue_Items(t *testing.T) {

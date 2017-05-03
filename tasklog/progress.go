@@ -6,7 +6,7 @@ import (
 
 const (
 	IndexerTask = "Indexer"
-	BackuperTask = "Backuper"
+	ManagerTask = "Manager"
 )
 
 type Task struct {
@@ -21,7 +21,7 @@ type TaskHandler func(status Task)
 
 var (
 	handlers map[string][]TaskHandler
-	mutex sync.Mutex
+	mutex    sync.Mutex
 )
 
 func init() {
@@ -46,12 +46,12 @@ func getHandlers(taskName string) []TaskHandler {
 }
 
 func Status(taskName string, running bool, pos int, total int, messages ...string) {
-	task := Task{Name:taskName, Running:running, Pos:pos, Total:total, Messages:messages}
+	task := Task{Name: taskName, Running: running, Pos: pos, Total: total, Messages: messages}
 	for _, handler := range getHandlers(taskName) {
 		handler(task)
 	}
 }
 
-func StatusMessage(taskName string, messages...string) {
+func StatusMessage(taskName string, messages ...string) {
 	Status(taskName, true, 0, 0, messages...)
 }

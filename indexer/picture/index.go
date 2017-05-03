@@ -4,17 +4,17 @@ import (
 	"bitbucket.org/taruti/mimemagic"
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/tiff"
-	"github.com/syndtr/goleveldb/leveldb/errors"
 	"io"
 
+	"github.com/dtylman/pictures/tasklog"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
-	"github.com/dtylman/pictures/tasklog"
 )
 
 const (
@@ -112,9 +112,14 @@ func (i *Index) populateMD5(file *os.File) error {
 	return nil
 }
 
-func (i*Index) ExifString() string {
+func (i *Index) ExifString() string {
 	return fmt.Sprintf("%v", i.Exif)
 }
+
+func (i *Index) Name() string {
+	return filepath.Base(i.Path)
+}
+
 //MimeIs return true if mime type is one of the provided array
 func MimeIs(mimeType string, pictureType ...string) bool {
 	base := strings.Split(mimeType, "/")[0]

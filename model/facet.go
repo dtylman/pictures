@@ -18,7 +18,8 @@ func (f Facets) Len() int {
 func (f Facets) Less(i, j int) bool {
 	return f[i].Count > f[j].Count
 }
+
 // Swap swaps the elements with indexes i and j.
-func (f Facets)Swap(i, j int) {
+func (f Facets) Swap(i, j int) {
 	f[i], f[j] = f[j], f[i]
 }

@@ -1,9 +1,9 @@
 package db
 
 import (
-	"path"
-	"os"
 	"github.com/dtylman/pictures/conf"
+	"os"
+	"path"
 	"path/filepath"
 )
 

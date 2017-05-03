@@ -1,12 +1,12 @@
 package darknet
 
 import (
-	"os/exec"
-	"io"
 	"encoding/json"
+	"io"
+	"log"
+	"os/exec"
 	"path/filepath"
 	"runtime"
-	"log"
 	"time"
 )
 
@@ -43,7 +43,7 @@ func NewProcess() (*Process, error) {
 	return p, nil
 }
 
-func (p*Process) Detect(path string, timeout time.Duration) (*Result, error) {
+func (p *Process) Detect(path string, timeout time.Duration) (*Result, error) {
 	log.Printf("Darknet detecting '%v'...", path)
 	_, err := p.stdInWriter.Write([]byte(path + "\n"))
 	if err != nil {
@@ -69,10 +69,10 @@ func (p*Process) Detect(path string, timeout time.Duration) (*Result, error) {
 	return &result, nil
 }
 
-func (p*Process) Close() {
+func (p *Process) Close() {
 	p.stdInWriter.Close()
 	p.stdoutReader.Close()
-	if (p.cmd.Process != nil) {
+	if p.cmd.Process != nil {
 		p.cmd.Process.Kill()
 	}
 	log.Printf("Closing process %v", p.cmd.Process.Pid)

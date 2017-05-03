@@ -1,24 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="CompilerConfiguration">
-    <resourceExtensions />
-    <wildcardResourcePatterns>
-      <entry name="!?*.java" />
-      <entry name="!?*.form" />
-      <entry name="!?*.class" />
-      <entry name="!?*.groovy" />
-      <entry name="!?*.scala" />
-      <entry name="!?*.flex" />
-      <entry name="!?*.kt" />
-      <entry name="!?*.clj" />
-      <entry name="!?*.aj" />
-    </wildcardResourcePatterns>
-    <annotationProcessing>
-      <profile default="true" name="Default" enabled="false">
-        <processorPath useClasspath="true" />
-      </profile>
-    </annotationProcessing>
-  </component>
   <component name="CopyrightManager" default="" />
   <component name="DBNavigator.Project.DataEditorManager">
     <record-view-column-sorting-type value="BY_INDEX" />
@@ -556,6 +537,12 @@
   <component name="DBNavigator.Project.StatementExecutionManager">
     <execution-variables />
   </component>
+  <component name="InspectionProjectProfileManager">
+    <profile version="1.0">
+      <option name="myName" value="Project Default" />
+    </profile>
+    <version value="1.0" />
+  </component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
       <MavenGeneralSettings>
@@ -578,7 +565,7 @@
       <module fileurl="file://$PROJECT_DIR$/pictures.iml" filepath="$PROJECT_DIR$/pictures.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_7" default="true" assert-keyword="true" jdk-15="true" project-jdk-name="Go 1.7.3" project-jdk-type="Go SDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="true" project-jdk-name="Go 1.8" project-jdk-type="Go SDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
   <component name="PropertiesComponent">
@@ -683,24 +670,16 @@
     <library name="GOPATH &lt;pictures&gt;">
       <CLASSES>
         <root url="file://$PROJECT_DIR$/../../../gopkg.in" />
-        <root url="file://$PROJECT_DIR$/../../../bitbucket.org" />
         <root url="file://$PROJECT_DIR$/../.." />
-        <root url="file://$PROJECT_DIR$/../../../sourcegraph.com" />
-        <root url="file://$PROJECT_DIR$/../../../googlemaps.github.io" />
         <root url="file://$PROJECT_DIR$/../../../golang.org" />
-        <root url="file://$PROJECT_DIR$/../../../cloud.google.com" />
-        <root url="file://$PROJECT_DIR$/../../../google.golang.org" />
+        <root url="file://$PROJECT_DIR$/../../../bitbucket.org" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
         <root url="file://$PROJECT_DIR$/../../../gopkg.in" />
-        <root url="file://$PROJECT_DIR$/../../../bitbucket.org" />
         <root url="file://$PROJECT_DIR$/../.." />
-        <root url="file://$PROJECT_DIR$/../../../sourcegraph.com" />
-        <root url="file://$PROJECT_DIR$/../../../googlemaps.github.io" />
         <root url="file://$PROJECT_DIR$/../../../golang.org" />
-        <root url="file://$PROJECT_DIR$/../../../cloud.google.com" />
-        <root url="file://$PROJECT_DIR$/../../../google.golang.org" />
+        <root url="file://$PROJECT_DIR$/../../../bitbucket.org" />
       </SOURCES>
       <excluded>
         <root url="file://$PROJECT_DIR$" />

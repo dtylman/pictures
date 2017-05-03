@@ -3,20 +3,15 @@ package db
 import (
 	"os"
 
-	"github.com/blevesearch/bleve"
-	"github.com/boltdb/bolt"
 	"github.com/dtylman/pictures/conf"
 
-	_ "github.com/mattn/go-sqlite3"
 	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
 	"log"
 )
 
 var (
-	idx bleve.Index
-	bdb          *bolt.DB
 	sqldb *sql.DB
-	imagesBucket = []byte("images")
 )
 
 func openSQlite() error {
@@ -25,7 +20,7 @@ func openSQlite() error {
 		return err
 	}
 
-	sqldb, err = sql.Open("sqlite3", path + "?_busy_timeout=10000")
+	sqldb, err = sql.Open("sqlite3", path+"?_busy_timeout=10000")
 	if err != nil {
 		return err
 	}

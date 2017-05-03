@@ -1,157 +1,93 @@
 package view
 
 import (
-	"fmt"
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
+	"github.com/dtylman/pictures/cmd/app/view/darktheme"
+	"github.com/dtylman/pictures/indexer/db"
 	"github.com/dtylman/pictures/model"
 )
-
-var activeSearch *model.Search
 
 type search struct {
 	*gowd.Element
 	inputSearch *gowd.Element
-	btnSearch   *gowd.Element
-	facets      *Select
-	panelSearch *gowd.Element
 }
 
-func newSearch() *search {
+func newSearchView() *search {
 	s := new(search)
-	s.Element = bootstrap.NewContainer(true)
+	var err error
+	s.Element, err = gowd.ParseElement(`<div>
+                <div class="row">
+                    <div class="col-lg-12 text-center v-center">
+                        <h1>Text Search</h1>
+                        <p class="lead" id="pnlSubtitle"></p>
+                        <br>
+                        <br>
+                        <div class="input-group" style="width: 340px; text-align: center; margin: 0 auto;" id="pnlSearch">
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="text-center">
+                    <h3>Or try one of these:</h3>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12 text-center v-center" style="font-size: 39pt;" id="pnlButtons">
 
-	s.panelSearch = bootstrap.NewContainer(true)
-	s.AddElement(s.panelSearch)
-
+                    </div>
+                </div>
+            </div>`)
+	if err != nil {
+		panic(err)
+	}
+	pnlSubtitle := s.Find("pnlSubtitle")
+	stats, err := db.Stats()
+	if err != nil {
+		Root.addAlertError(err)
+	} else {
+		pnlSubtitle.AddElement(gowd.NewText(stats))
+	}
+	pnlSearch := s.Find("pnlSearch")
 	s.inputSearch = bootstrap.NewInput(bootstrap.InputTypeText)
-	s.facets = NewSelect()
-	s.inputSearch.SetAttribute("placeholder", "Search...")
-	s.inputSearch.SetClass("form-control")
-	s.inputSearch.OnKeyPressEvent(gowd.OnKeyPress, 13, s.btnSearchClick)
+	s.inputSearch.SetClass("form-control input-lg")
+	s.inputSearch.SetAttribute("placeholder", "Search anything")
 	s.inputSearch.SetAttribute("autofocus", "true")
-	s.btnSearch = bootstrap.NewButton(bootstrap.ButtonPrimary, "Search")
-	s.btnSearch.OnEvent(gowd.OnClick, s.btnSearchClick)
 
-	s.facets.Element.SetClass("form-control")
-	s.facets.OnEvent(gowd.OnChange, s.facetChanged)
+	btnSearch := bootstrap.NewButton(bootstrap.ButtonPrimary, "Search")
+	btnSearch.SetClass("btn btn-lg btn-primary")
+	btnSearch.OnEvent(gowd.OnClick, s.btnSearchClick)
+	pnlSearch.AddElement(s.inputSearch)
+	pnlSearch.AddElement(bootstrap.NewElement("span", "input-group-btn", btnSearch))
+
+	btnDuplicates := bootstrap.NewButton(bootstrap.ButtonDefault, "Duplicates")
+	pnlButtons := s.Find("pnlButtons")
+	pnlButtons.AddElement(btnDuplicates)
 
 	return s
 }
 
-func (s *search) facetChanged(sender *gowd.Element, event *gowd.EventElement) {
-	term := event.GetValue()
-	s.inputSearch.SetAttribute("value", term)
-	s.doQuery(term)
+func (s *search) updateState() {
 }
 
-func (s *search) btnPageClick(sender *gowd.Element, event *gowd.EventElement) {
-	page := sender.Object.(model.PageItem)
-	activeSearch.StartFrom(page.Start)
-	s.updateState()
+func (s *search) getContent() *gowd.Element {
+	return s.Element
 }
 
-func (s *search) btnPrevClick(sender *gowd.Element, event *gowd.EventElement) {
-	activeSearch.PrevPage()
-	s.updateState()
+func (s *search) populateToolbar(menu *darktheme.Menu) {
+
 }
 
-func (s *search) btnNextClick(sender *gowd.Element, event *gowd.EventElement) {
-	activeSearch.NextPage()
-	s.updateState()
+func (s *search) btnDuplicatesClick(sender *gowd.Element, event *gowd.EventElement) {
+
 }
 
 func (s *search) btnSearchClick(sender *gowd.Element, event *gowd.EventElement) {
-	term := s.inputSearch.GetValue()
-	s.doQuery(term)
-}
-
-func (s *search) doQuery(term string) {
 	var err error
+	term := s.inputSearch.GetValue()
 	activeSearch, err = model.NewSearch(term)
 	if err != nil {
 		Root.addAlertError(err)
 		return
 	}
-	s.updateState()
-}
-
-func (s *search) thumbClick(sender *gowd.Element, event *gowd.EventElement) {
-	hit := sender.Object.(int)
-	activeSearch.SetActiveImage(hit)
-	Root.setActiveView(newImage())
-}
-
-func (s *search) populateToolbar(toolbar *gowd.Element) {
-
-	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 2, s.inputSearch))
-	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 1, s.btnSearch))
-	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 2, s.facets.Element))
-}
-
-func (s *search) updateState() {
-	s.panelSearch.RemoveElements()
-
-	well := bootstrap.NewElement("div", "well")
-	s.panelSearch.AddElement(well)
-	row := bootstrap.NewRow()
-	well.AddElement(row)
-
-	if activeSearch == nil {
-		var err error
-		activeSearch, err = model.NewSearch("")
-		if err != nil {
-			Root.addAlertError(err)
-			return
-		}
-	}
-
-	for i, thumb := range activeSearch.Thumbs {
-		img := bootstrap.NewElement("img", "img-thumbnail")
-		img.SetAttribute("src", "file:///" + thumb.Path)
-
-		link := bootstrap.NewLinkButton("")
-		link.Object = i
-		link.OnEvent(gowd.OnClick, s.thumbClick)
-		link.AddElement(img)
-
-		col := bootstrap.NewColumn(bootstrap.ColumnLarge, 3)
-		col.AddElement(link)
-
-		row.AddElement(col)
-	}
-
-	//build the pagination
-	pagination := bootstrap.NewPagination()
-	btn := bootstrap.NewLinkButton("<<")
-	btn.OnEvent(gowd.OnClick, s.btnPrevClick)
-	pagination.Items.AddItem(btn)
-	activePage := activeSearch.Pages.ActivePage()
-	for pageOrder, page := range activeSearch.Pages {
-		if pageOrder > (activePage - 7) && pageOrder < (activePage + 7) {
-			btn := bootstrap.NewLinkButton(page.Caption)
-			btn.Object = page
-			btn.OnEvent(gowd.OnClick, s.btnPageClick)
-			item := pagination.Items.AddItem(btn)
-			if page.Active {
-				item.SetClass("active")
-			}
-		}
-
-	}
-	btn = bootstrap.NewLinkButton(">>")
-	btn.OnEvent(gowd.OnClick, s.btnNextClick)
-	pagination.Items.AddItem(btn)
-	s.panelSearch.AddElement(pagination.Element)
-
-	// facets
-	s.facets.RemoveElements()
-	for _, facet := range activeSearch.Facets {
-		s.facets.AddOption(fmt.Sprintf("%s (%d)", facet.Term, facet.Count), facet.Term)
-	}
-
-}
-
-func (s *search) getContent() *gowd.Element {
-	return s.Element
+	Root.setActiveView(Root.thumb)
 }

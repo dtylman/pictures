@@ -2,13 +2,13 @@ package thumbs
 
 import (
 	"github.com/dtylman/pictures/conf"
+	"github.com/dtylman/pictures/indexer/db"
 	"github.com/nfnt/resize"
 	"image"
 	_ "image/gif"
 	"image/jpeg"
 	_ "image/png"
 	"os"
-	"github.com/dtylman/pictures/indexer/db"
 )
 
 //MakeThumb creates a thumbnail from a picture and returns a path to the thumbnail

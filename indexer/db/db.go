@@ -1,17 +1,18 @@
 package db
 
 import (
-	"github.com/dtylman/pictures/indexer/picture"
 	"database/sql"
-	"time"
+	"fmt"
+	"github.com/dtylman/pictures/indexer/picture"
 	"log"
+	"time"
 )
 
 const (
-	PhaseThumb = "thumb"
+	PhaseThumb    = "thumb"
 	PhaseLocation = "location"
-	PhaseObjects = "objects"
-	PhaseFaces = "faces"
+	PhaseObjects  = "objects"
+	PhaseFaces    = "faces"
 )
 
 //BatchIndex updates batch of pictures
@@ -32,7 +33,7 @@ func BatchIndex(images *picture.Queue) error {
 	return tx.Commit()
 }
 
-func indexWithTx(tx *sql.Tx, picture*picture.Index) error {
+func indexWithTx(tx *sql.Tx, picture *picture.Index) error {
 	_, err := tx.Exec(`INSERT OR REPLACE INTO picture VALUES (?,?,?,?,?,?,?,?,?)`,
 		picture.MD5, picture.MimeType, picture.Taken.Unix(), picture.Lat, picture.Long, picture.Location, picture.Objects,
 		picture.ExifString(), picture.Faces)
@@ -115,6 +116,12 @@ func createSchema() error {
 			name TEXT NOT NULL,
 			prob NUMBER NOT NULL
 			) WITHOUT ROWID`,
+		`CREATE VIEW images_view AS
+			SELECT DISTINCT picture.md5, mime_type,	file.path,
+			taken, lat, long, location, album, objects, faces
+			FROM picture
+			INNER JOIN file ON file.md5=picture.md5
+			ORDER BY taken, file.time`,
 	}
 	return execMultiple(schema)
 }
@@ -190,7 +197,7 @@ func HasImage(md5 string) bool {
 	return count > 0
 }
 
-func removeWithTx(tx*sql.Tx, md5 string) error {
+func removeWithTx(tx *sql.Tx, md5 string) error {
 	_, err := tx.Exec(`DELETE FROM picture WHERE md5=?`, md5)
 	if err != nil {
 		return err
@@ -234,6 +241,14 @@ func Remove(keys []string) error {
 	return tx.Commit()
 }
 
+func Stats() (string, error) {
+	var count int
+	err := sqldb.QueryRow(`SELECT count(*) FROM images_view`).Scan(&count)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%v images", count), nil
+}
 
 //WalkImagesFunc defines a callback to scan alll images in database (use with WalkImages)
 type WalkImagesFunc func(key string, image *picture.Index, err error)
@@ -248,13 +263,13 @@ func WalkImages(wf WalkImagesFunc) {
 		return
 	}
 	defer rows.Close()
-	for (rows.Next()) {
+	for rows.Next() {
 		image, err := rows2Image(rows)
 		wf(image.MD5, image, err)
 	}
 }
 
-func rows2Image(rows*sql.Rows) (*picture.Index, error) {
+func rows2Image(rows *sql.Rows) (*picture.Index, error) {
 	var image picture.Index
 	var taken int64
 	err := rows.Scan(&image.MD5, &image.MimeType, &image.Path, &taken, &image.Lat,

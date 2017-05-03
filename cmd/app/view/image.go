@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
+	"github.com/dtylman/pictures/cmd/app/view/darktheme"
 	"github.com/dtylman/pictures/indexer/picture"
 )
 
@@ -20,15 +21,14 @@ func newImage() *image {
 	return i
 }
 
-func (i *image) populateToolbar(toolbar *gowd.Element) {
-	btnPrev := bootstrap.NewButton(bootstrap.ButtonDefault, "Prev")
-	btnPrev.OnEvent(gowd.OnClick, i.btnPrevClicked)
-	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 1, btnPrev))
+func (i *image) populateToolbar(menu *darktheme.Menu) {
+	menu.AddButton(menu.TopLeft, "Prev", "fa fa-arrow-left", i.btnPrevClicked)
+	menu.AddButton(menu.TopLeft, "Next", "fa fa-arrow-right", i.btnNextClicked)
+	menu.AddButton(menu.TopLeft, "Back", "fa fa-undo", i.btnBackClicked)
+}
 
-	btnNext := bootstrap.NewButton(bootstrap.ButtonDefault, "Next")
-	btnNext.OnEvent(gowd.OnClick, i.btnNextClicked)
-	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 1, btnNext))
-
+func (i *image) btnBackClicked(sender *gowd.Element, event *gowd.EventElement) {
+	Root.setActiveView(Root.thumb)
 }
 
 func (i *image) btnPrevClicked(sender *gowd.Element, event *gowd.EventElement) {
@@ -57,7 +57,6 @@ func (i *image) updateState() {
 		vid.SetAttribute("src", fmt.Sprintf("file:///%s", activeSearch.ActiveImage.Path))
 		vid.SetAttribute("type", mimeType)
 		col.AddElement(vid)
-
 	}
 
 	table := bootstrap.NewTable(bootstrap.TableStripped)

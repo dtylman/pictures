@@ -3,6 +3,7 @@ package view
 import (
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
+	"github.com/dtylman/pictures/cmd/app/view/darktheme"
 	"github.com/dtylman/pictures/conf"
 	"github.com/dtylman/pictures/indexer"
 )
@@ -12,7 +13,6 @@ import (
 type indexerView struct {
 	*gowd.Element
 
-	btnStart      *gowd.Element
 	btnAddFolder  *bootstrap.FileButton
 	chkLocation   *bootstrap.Checkbox
 	chkDeleteDB   *bootstrap.Checkbox
@@ -40,9 +40,6 @@ func newIndexerView() *indexerView {
 	i.inputMapQuest.SetPlaceHolder("API KEY...")
 	i.inputMapQuest.OnEvent(gowd.OnChange, i.inputMapChanged)
 
-	i.btnStart = bootstrap.NewButton(bootstrap.ButtonPrimary, "Start")
-	i.btnStart.OnEvent(gowd.OnClick, i.btnStartClicked)
-
 	i.btnAddFolder = bootstrap.NewFileButton(bootstrap.ButtonDefault, "Add folder", true)
 	i.btnAddFolder.OnChange(i.btnAddFolderChanged)
 
@@ -69,12 +66,12 @@ func newIndexerView() *indexerView {
 	return i
 }
 
-func (i *indexerView) getContent() *gowd.Element {
-	return i.Element
+func (i *indexerView) populateToolbar(menu *darktheme.Menu) {
+	menu.AddButton(menu.TopLeft, "Start", "fa fa-play", i.btnStartClicked)
 }
 
-func (i *indexerView) populateToolbar(toolbar *gowd.Element) {
-	toolbar.AddElement(bootstrap.NewColumn(bootstrap.ColumnLarge, 1, i.btnStart))
+func (i *indexerView) getContent() *gowd.Element {
+	return i.Element
 }
 
 func (i *indexerView) updateState() {
@@ -98,10 +95,10 @@ func (i *indexerView) btnSourceFolderDelete(sender *gowd.Element, event *gowd.Ev
 func (i *indexerView) btnStartClicked(sender *gowd.Element, event *gowd.EventElement) {
 	err := indexer.Start(indexer.Options{
 		WithLocation:   i.chkLocation.Checked(),
-		DeleteDatabase:         i.chkDeleteDB.Checked(),
-		WithFaces: i.chkWithFaces.Checked(),
-		WithObjects: i.chkWithObjs.Checked(),
-		QuickScan: i.chkQuicksacn.Checked(),
+		DeleteDatabase: i.chkDeleteDB.Checked(),
+		WithFaces:      i.chkWithFaces.Checked(),
+		WithObjects:    i.chkWithObjs.Checked(),
+		QuickScan:      i.chkQuicksacn.Checked(),
 	})
 	if err != nil {
 		Root.addAlertError(err)
