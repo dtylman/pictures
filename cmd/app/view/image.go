@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
-	"github.com/dtylman/pictures/indexer/picture"
 	"github.com/dtylman/pictures/cmd/app/view/darktheme"
+	"github.com/dtylman/pictures/indexer/picture"
 )
 
 type image struct {
@@ -21,10 +21,10 @@ func newImage() *image {
 	return i
 }
 
-func (i *image) populateToolbar(menu*darktheme.Menu) {
-	menu.AddButton(menu.TopLeft,"Prev", "fa fa-arrow-left", i.btnPrevClicked)
-	menu.AddButton(menu.TopLeft,"Next", "fa fa-arrow-right", i.btnNextClicked)
-	menu.AddButton(menu.TopLeft,"Back", "fa fa-undo",i.btnBackClicked)
+func (i *image) populateToolbar(menu *darktheme.Menu) {
+	menu.AddButton(menu.TopLeft, "Prev", "fa fa-arrow-left", i.btnPrevClicked)
+	menu.AddButton(menu.TopLeft, "Next", "fa fa-arrow-right", i.btnNextClicked)
+	menu.AddButton(menu.TopLeft, "Back", "fa fa-undo", i.btnBackClicked)
 }
 
 func (i *image) btnBackClicked(sender *gowd.Element, event *gowd.EventElement) {

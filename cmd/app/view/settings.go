@@ -3,8 +3,8 @@ package view
 import (
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
-	"github.com/dtylman/pictures/conf"
 	"github.com/dtylman/pictures/cmd/app/view/darktheme"
+	"github.com/dtylman/pictures/conf"
 )
 
 type settingsView struct {
@@ -30,8 +30,8 @@ func (sv *settingsView) updateState() {
 	sv.inputDataFolder.SetValue(conf.Options.DataFolder)
 }
 
-func (sv *settingsView) populateToolbar(menu*darktheme.Menu) {
-	menu.AddButton(menu.TopLeft,"Save", "fa fa-save", sv.btnSaveClicked)
+func (sv *settingsView) populateToolbar(menu *darktheme.Menu) {
+	menu.AddButton(menu.TopLeft, "Save", "fa fa-save", sv.btnSaveClicked)
 }
 
 func (sv *settingsView) getContent() *gowd.Element {

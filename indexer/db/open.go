@@ -5,8 +5,8 @@ import (
 
 	"github.com/dtylman/pictures/conf"
 
-	_ "github.com/mattn/go-sqlite3"
 	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
 	"log"
 )
 
@@ -20,7 +20,7 @@ func openSQlite() error {
 		return err
 	}
 
-	sqldb, err = sql.Open("sqlite3", path + "?_busy_timeout=10000")
+	sqldb, err = sql.Open("sqlite3", path+"?_busy_timeout=10000")
 	if err != nil {
 		return err
 	}

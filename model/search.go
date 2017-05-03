@@ -4,10 +4,10 @@ import (
 	"github.com/dtylman/pictures/conf"
 	"github.com/dtylman/pictures/indexer/db"
 	"github.com/dtylman/pictures/indexer/picture"
+	"log"
 	"sort"
 	"strconv"
 	"strings"
-	"log"
 )
 
 type ThumbItem struct {
@@ -98,7 +98,7 @@ func (s *Search) doQuery() error {
 	return nil
 }
 
-func (s *Search) Pages() Pages{
+func (s *Search) Pages() Pages {
 	pageCount := s.Total() / conf.Options.SearchPageSize
 	fromPage := s.start / conf.Options.SearchPageSize
 	pages := make(Pages, pageCount)
@@ -165,14 +165,14 @@ func (s *Search) Total() int {
 	return 0
 }
 
-func (s* Search) Page() []*picture.Index{
-	count:=s.Total()-s.start
-	if count>conf.Options.SearchPageSize{
-		count=conf.Options.SearchPageSize
+func (s *Search) Page() []*picture.Index {
+	count := s.Total() - s.start
+	if count > conf.Options.SearchPageSize {
+		count = conf.Options.SearchPageSize
 	}
-	items:=make([]*picture.Index,count)
-	for i:=0;i<count;i++{
-		items[i]=s.Results[i+s.start]
+	items := make([]*picture.Index, count)
+	for i := 0; i < count; i++ {
+		items[i] = s.Results[i+s.start]
 	}
 	return items
 }

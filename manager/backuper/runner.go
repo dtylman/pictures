@@ -1,17 +1,17 @@
 package backuper
 
 import (
-	"github.com/dtylman/pictures/indexer/picture"
-	"github.com/dtylman/pictures/indexer/db"
-	"log"
 	"encoding/json"
-	"path/filepath"
-	"github.com/dtylman/pictures/conf"
-	"io/ioutil"
-	"github.com/dtylman/pictures/tasklog"
-	"os"
-	"io"
 	"fmt"
+	"github.com/dtylman/pictures/conf"
+	"github.com/dtylman/pictures/indexer/db"
+	"github.com/dtylman/pictures/indexer/picture"
+	"github.com/dtylman/pictures/tasklog"
+	"io"
+	"io/ioutil"
+	"log"
+	"os"
+	"path/filepath"
 )
 
 type runner struct {
@@ -19,8 +19,8 @@ type runner struct {
 	items   backupItems
 }
 
-func (r*runner) checkImage(key string, image *picture.Index, err error) {
-	if !r.Running{
+func (r *runner) checkImage(key string, image *picture.Index, err error) {
+	if !r.Running {
 		return
 	}
 	if err != nil {
@@ -33,7 +33,7 @@ func (r*runner) checkImage(key string, image *picture.Index, err error) {
 	}
 }
 
-func (r*runner) fileExists(src, dest string) bool {
+func (r *runner) fileExists(src, dest string) bool {
 	in, err := os.Stat(src)
 	if err != nil {
 		return false
@@ -46,7 +46,7 @@ func (r*runner) fileExists(src, dest string) bool {
 
 }
 
-func (r*runner) copyFile(src, dest string) error {
+func (r *runner) copyFile(src, dest string) error {
 	in, err := os.Open(src)
 	if err != nil {
 		return err
@@ -61,16 +61,16 @@ func (r*runner) copyFile(src, dest string) error {
 	return err
 }
 
-func (r*runner) copyFiles() error {
+func (r *runner) copyFiles() error {
 	total := len(r.items)
 	i := 0
 	for _, item := range r.items {
-		if !r.Running{
+		if !r.Running {
 			log.Println("Runner stopped before done")
 			break
 		}
 		fileName := item.Sources[0]
-		tasklog.Status(tasklog.BackuperTask, true, i, total, fmt.Sprintf("Copying %s", fileName))
+		tasklog.Status(tasklog.ManagerTask, true, i, total, fmt.Sprintf("Copying %s", fileName))
 		if r.fileExists(fileName, item.Target) {
 			continue
 		}
@@ -80,7 +80,7 @@ func (r*runner) copyFiles() error {
 		}
 		i++
 	}
-	tasklog.Status(tasklog.BackuperTask, true, i, total, "Saving journal....")
+	tasklog.Status(tasklog.ManagerTask, true, i, total, "Saving journal....")
 
 	data, err := json.MarshalIndent(r.items, "", "  ")
 	if err != nil {
@@ -93,14 +93,14 @@ func (r*runner) copyFiles() error {
 	return nil
 }
 
-func (r*runner) run() {
+func (r *runner) run() {
 	defer func() {
 		Stop()
 		log.Println("Backup finished")
-		tasklog.Status(tasklog.BackuperTask, false, 0, 0, "Done")
+		tasklog.Status(tasklog.ManagerTask, false, 0, 0, "Done")
 	}()
 	log.Printf("Starting backup to %s", conf.Options.BackupFolder)
-	tasklog.Status(tasklog.BackuperTask, true, 0, 0, "Backup started...")
+	tasklog.Status(tasklog.ManagerTask, true, 0, 0, "Backup started...")
 	r.items = make(backupItems)
 	db.WalkImages(r.checkImage)
 	err := r.copyFiles()
@@ -109,7 +109,6 @@ func (r*runner) run() {
 	}
 }
 
-func (r*runner) stop() {
+func (r *runner) stop() {
 	r.Running = false
 }
-

@@ -18,13 +18,13 @@ func NewAlerts() *Alerts {
 	return a
 }
 
-func (a*Alerts) Add(text string) {
+func (a *Alerts) Add(text string) {
 	a.key++
 	a.alerts[a.key] = text
 	a.updateState()
 }
 
-func (a*Alerts) updateState() {
+func (a *Alerts) updateState() {
 	a.RemoveElements()
 	for key, alert := range a.alerts {
 		elems, _ := a.AddHtml(`<div class="col-lg-6">

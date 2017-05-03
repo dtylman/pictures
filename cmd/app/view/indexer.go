@@ -3,9 +3,9 @@ package view
 import (
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
+	"github.com/dtylman/pictures/cmd/app/view/darktheme"
 	"github.com/dtylman/pictures/conf"
 	"github.com/dtylman/pictures/indexer"
-	"github.com/dtylman/pictures/cmd/app/view/darktheme"
 )
 
 //<a href="https://developer.mapquest.com/plan_purchase/steps/business_edition/business_edition_free/register">MapQuest </a>Key:
@@ -66,8 +66,8 @@ func newIndexerView() *indexerView {
 	return i
 }
 
-func (i*indexerView) populateToolbar(menu*darktheme.Menu) {
-	menu.AddButton(menu.TopLeft,"Start", "fa fa-play", i.btnStartClicked)
+func (i *indexerView) populateToolbar(menu *darktheme.Menu) {
+	menu.AddButton(menu.TopLeft, "Start", "fa fa-play", i.btnStartClicked)
 }
 
 func (i *indexerView) getContent() *gowd.Element {
@@ -95,10 +95,10 @@ func (i *indexerView) btnSourceFolderDelete(sender *gowd.Element, event *gowd.Ev
 func (i *indexerView) btnStartClicked(sender *gowd.Element, event *gowd.EventElement) {
 	err := indexer.Start(indexer.Options{
 		WithLocation:   i.chkLocation.Checked(),
-		DeleteDatabase:         i.chkDeleteDB.Checked(),
-		WithFaces: i.chkWithFaces.Checked(),
-		WithObjects: i.chkWithObjs.Checked(),
-		QuickScan: i.chkQuicksacn.Checked(),
+		DeleteDatabase: i.chkDeleteDB.Checked(),
+		WithFaces:      i.chkWithFaces.Checked(),
+		WithObjects:    i.chkWithObjs.Checked(),
+		QuickScan:      i.chkQuicksacn.Checked(),
 	})
 	if err != nil {
 		Root.addAlertError(err)

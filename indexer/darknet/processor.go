@@ -1,13 +1,13 @@
 package darknet
 
 import (
+	"errors"
+	"fmt"
+	"github.com/dtylman/pictures/conf"
+	"github.com/dtylman/pictures/indexer/db"
 	"github.com/dtylman/pictures/indexer/picture"
 	"github.com/dtylman/pictures/tasklog"
-	"fmt"
 	"time"
-	"github.com/dtylman/pictures/conf"
-	"errors"
-	"github.com/dtylman/pictures/indexer/db"
 )
 
 type Processor struct {
@@ -20,12 +20,12 @@ func NewProcessor() *Processor {
 	return p
 }
 
-func (p*Processor) Process(image*picture.Index) error {
-	if !db.SetPhase(image.MD5,db.PhaseObjects){
+func (p *Processor) Process(image *picture.Index) error {
+	if !db.SetPhase(image.MD5, db.PhaseObjects) {
 		return nil
 	}
 	tasklog.StatusMessage(tasklog.IndexerTask, fmt.Sprintf("Detecing objects for %s", image.Path))
-	res, err := p.darknet.Detect(image.Path, time.Duration(conf.Options.DarknetTimeout) * time.Second)
+	res, err := p.darknet.Detect(image.Path, time.Duration(conf.Options.DarknetTimeout)*time.Second)
 	if err != nil {
 		tasklog.Error(err)
 		p.spawnDarknet()
@@ -41,7 +41,7 @@ func (p*Processor) Process(image*picture.Index) error {
 	return nil
 }
 
-func (p*Processor) spawnDarknet() {
+func (p *Processor) spawnDarknet() {
 	if p.darknet != nil {
 		p.darknet.Close()
 	}

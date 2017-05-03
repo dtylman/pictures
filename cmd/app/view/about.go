@@ -15,14 +15,14 @@ func newAboutView() *aboutView {
 	return a
 }
 
-func (a* aboutView) updateState(){
+func (a *aboutView) updateState() {
 
 }
 
-func (a* aboutView) getContent() *gowd.Element{
+func (a *aboutView) getContent() *gowd.Element {
 	return a.Element
 }
 
-func (a* aboutView) populateToolbar(menu*darktheme.Menu){
+func (a *aboutView) populateToolbar(menu *darktheme.Menu) {
 
 }

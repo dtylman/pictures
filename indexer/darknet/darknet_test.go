@@ -1,11 +1,11 @@
 package darknet
 
 import (
-	"github.com/stretchr/testify/assert"
-	"testing"
 	"encoding/json"
-	"time"
+	"github.com/stretchr/testify/assert"
 	"sync"
+	"testing"
+	"time"
 )
 
 func TestProcess_Detect(t *testing.T) {
@@ -24,10 +24,10 @@ func TestProcess_Detect(t *testing.T) {
 			}
 			defer p.Close()
 			defer wg.Done()
-			res, err := p.Detect("/home/danny/src/bome/darknet/data/horses1.jpg", time.Second * 40)
+			res, err := p.Detect("/home/danny/src/bome/darknet/data/horses1.jpg", time.Second*40)
 			assert.NoError(t, err)
 			t.Log(res)
-			res, err = p.Detect("/home/danny/src/bome/darknet/data/dog.jpg", time.Second * 40)
+			res, err = p.Detect("/home/danny/src/bome/darknet/data/dog.jpg", time.Second*40)
 			assert.NoError(t, err)
 			t.Log(res)
 		}()
@@ -37,7 +37,7 @@ func TestProcess_Detect(t *testing.T) {
 
 }
 
-func TestSerialize(t*testing.T) {
+func TestSerialize(t *testing.T) {
 	message := `{"res":"success","objects": [{"name":"horse","count":6,"prob":87}]}`
 	var r Result
 	err := json.Unmarshal([]byte(message), &r)

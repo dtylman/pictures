@@ -68,7 +68,7 @@ func (p *Processor) worker(wg *sync.WaitGroup, total int) {
 	batch := newProcessorBatch()
 	for image != nil {
 		before := *image
-		tasklog.Status(tasklog.IndexerTask, IsRunning(), total - left, total, fmt.Sprintf("Processing %s...", image.Path))
+		tasklog.Status(tasklog.IndexerTask, IsRunning(), total-left, total, fmt.Sprintf("Processing %s...", image.Path))
 		for _, processor := range p.processors {
 			if !IsRunning() {
 				//indexer had stopped.
@@ -84,7 +84,7 @@ func (p *Processor) worker(wg *sync.WaitGroup, total int) {
 		}
 		left, image = p.images.Pop()
 	}
-	tasklog.Status(tasklog.IndexerTask, IsRunning(), total - left, total, "Saving images...")
+	tasklog.Status(tasklog.IndexerTask, IsRunning(), total-left, total, "Saving images...")
 	batch.commit()
 }
 

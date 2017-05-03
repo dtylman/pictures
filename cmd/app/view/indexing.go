@@ -1,12 +1,12 @@
 package view
 
 import (
+	"fmt"
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
+	"github.com/dtylman/pictures/cmd/app/view/darktheme"
 	"github.com/dtylman/pictures/indexer"
 	"github.com/dtylman/pictures/tasklog"
-	"fmt"
-	"github.com/dtylman/pictures/cmd/app/view/darktheme"
 )
 
 type indexingView struct {
@@ -46,8 +46,8 @@ func (iv *indexingView) updateState() {
 	}
 }
 
-func (iv *indexingView) populateToolbar(menu*darktheme.Menu) {
-	menu.AddButton(menu.TopLeft,"Stop", "fa fa-stop", iv.btnStopClicked)
+func (iv *indexingView) populateToolbar(menu *darktheme.Menu) {
+	menu.AddButton(menu.TopLeft, "Stop", "fa fa-stop", iv.btnStopClicked)
 }
 
 func (iv *indexingView) updateIndexerProgress(status tasklog.Task) {

@@ -1,12 +1,12 @@
 package view
 
 import (
+	"fmt"
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
 	"github.com/dtylman/pictures/cmd/app/view/darktheme"
 	"github.com/dtylman/pictures/indexer/thumbs"
 	"log"
-	"fmt"
 )
 
 type table struct {
@@ -39,8 +39,8 @@ func (t *table) updateState() {
 	table.AddHeader("")
 
 	for _, image := range activeSearch.Results {
-		row:=table.AddRow()
-		td:=gowd.NewElement("td")
+		row := table.AddRow()
+		td := gowd.NewElement("td")
 		td.AddElement(bootstrap.NewInput(bootstrap.InputTypeCheckbox))
 		row.AddElement(td)
 		row.AddElement(table.NewCell(image.Album))
@@ -50,14 +50,14 @@ func (t *table) updateState() {
 		row.AddElement(table.NewCell(image.Location))
 		row.AddElement(table.NewCell(image.Objects))
 		row.AddElement(table.NewCell(image.Faces))
-		img:=gowd.NewElement("img")
-		thumb,err:=thumbs.MakeThumb(image.Path,image.MD5,false)
+		img := gowd.NewElement("img")
+		thumb, err := thumbs.MakeThumb(image.Path, image.MD5, false)
 		if err != nil {
 			log.Println(err)
 		}
-		img.SetAttribute("src",fmt.Sprintf("file://"+thumb))
-		img.SetAttribute("style","height: 60px;")
-		td=gowd.NewElement("td")
+		img.SetAttribute("src", fmt.Sprintf("file://"+thumb))
+		img.SetAttribute("style", "height: 60px;")
+		td = gowd.NewElement("td")
 		td.AddElement(img)
 		row.AddElement(td)
 	}

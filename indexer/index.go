@@ -1,11 +1,11 @@
 package indexer
 
 import (
+	"github.com/dtylman/pictures/indexer/darknet"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/mknote"
-	"os"
-	"github.com/dtylman/pictures/indexer/darknet"
 	"log"
+	"os"
 )
 
 func init() {
@@ -15,15 +15,15 @@ func init() {
 
 type Options struct {
 	//IndexLocation if true will do include geolocation
-	WithLocation   bool
+	WithLocation bool
 	//DeleteDatabase if true will delete previous results
 	DeleteDatabase bool
 	//WithObjects if true will include objects
-	WithObjects    bool
+	WithObjects bool
 	//With faces if true will include faces
-	WithFaces      bool
+	WithFaces bool
 	//QuickScan if true, will only compare file name when looking at image
-	QuickScan      bool
+	QuickScan bool
 }
 
 var (

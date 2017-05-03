@@ -6,9 +6,9 @@ import (
 
 type Menu struct {
 	*gowd.Element
-	TopLeft *gowd.Element
+	TopLeft  *gowd.Element
 	TopRight *gowd.Element
-	Side    *gowd.Element
+	Side     *gowd.Element
 }
 
 func NewMenu() *Menu {
@@ -40,7 +40,7 @@ func NewMenu() *Menu {
 }
 
 //<li><a href="index.html"><i class="fa fa-bullseye"></i> Dashboard</a></li>
-func (m*Menu) AddButton(panel*gowd.Element, caption string, icon string, handler gowd.EventHandler) *gowd.Element {
+func (m *Menu) AddButton(panel *gowd.Element, caption string, icon string, handler gowd.EventHandler) *gowd.Element {
 	link := gowd.NewElement("a")
 	link.SetAttribute("href", "#")
 	if icon != "" {

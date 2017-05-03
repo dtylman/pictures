@@ -20,11 +20,11 @@ func InitializeComponents() {
 type main struct {
 	*gowd.Element
 
-	menu     *darktheme.Menu
+	menu *darktheme.Menu
 
-	alerts   *darktheme.Alerts
+	alerts *darktheme.Alerts
 
-	content  *gowd.Element
+	content *gowd.Element
 
 	//views
 	search   view

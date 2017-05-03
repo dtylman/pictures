@@ -9,33 +9,33 @@ import (
 )
 
 const (
-	defaultConfFileName = "conf"
-	defaultBleveFolder = "pictures.db"
-	defaultFilesPath = "files"
-	defaultBoltFileName = "bolt.db"
+	defaultConfFileName   = "conf"
+	defaultBleveFolder    = "pictures.db"
+	defaultFilesPath      = "files"
+	defaultBoltFileName   = "bolt.db"
 	defaultSQLiteFileName = "sqlite.db"
 )
 
 //Options ...
 var Options struct {
 	//MapQuestAPIKey API key for map quest service
-	MapQuestAPIKey     string `json:"map_quest_api_key"`
+	MapQuestAPIKey string `json:"map_quest_api_key"`
 	//SourceFolders folders with pictures to scan
-	SourceFolders      []string `json:"source_folders"`
+	SourceFolders []string `json:"source_folders"`
 	//BackupFolder folder to backup
-	BackupFolder       string `json:"backup_folder"`
+	BackupFolder string `json:"backup_folder"`
 	//SearchPageSize the search page query size
-	SearchPageSize     int `json:"search_page_size"`
+	SearchPageSize int `json:"search_page_size"`
 	//ThumbX thumbnail width
-	ThumbX             uint `json:"thumb_x"`
+	ThumbX uint `json:"thumb_x"`
 	//ThumbY thumbnail height
-	ThumbY             uint `json:"thumb_y"`
+	ThumbY uint `json:"thumb_y"`
 	//IdleSeconds wait time before application closes.
-	IdleSeconds        uint `json:"idle_seconds"`
+	IdleSeconds uint `json:"idle_seconds"`
 	//DarknetTimeout, in seconds for wait to allow darknet to scan for objects.
-	DarknetTimeout     uint `json:"darknet_timeout"`
+	DarknetTimeout uint `json:"darknet_timeout"`
 	//DataFolder is the database folder
-	DataFolder         string `json:"db_folder"`
+	DataFolder string `json:"db_folder"`
 }
 
 func init() {
@@ -157,7 +157,6 @@ func BlevePath() (string, error) {
 func BoltPath() (string, error) {
 	return getFileFromDataFolder(defaultBoltFileName)
 }
-
 
 //SqlitePath bold db file path
 func SqlitePath() (string, error) {

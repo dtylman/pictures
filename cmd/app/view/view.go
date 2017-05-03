@@ -8,6 +8,5 @@ import (
 type view interface {
 	updateState()
 	getContent() *gowd.Element
-	populateToolbar(menu*darktheme.Menu)
+	populateToolbar(menu *darktheme.Menu)
 }
-

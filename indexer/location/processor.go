@@ -1,10 +1,10 @@
 package location
 
 import (
-	"github.com/dtylman/pictures/indexer/picture"
-	"github.com/dtylman/pictures/tasklog"
 	"fmt"
 	"github.com/dtylman/pictures/indexer/db"
+	"github.com/dtylman/pictures/indexer/picture"
+	"github.com/dtylman/pictures/tasklog"
 )
 
 type Processor struct {
@@ -14,7 +14,7 @@ func NewProcessor() *Processor {
 	return new(Processor)
 }
 
-func (p*Processor) Process(image*picture.Index) error {
+func (p *Processor) Process(image *picture.Index) error {
 	if !db.SetPhase(image.MD5, db.PhaseLocation) {
 		return nil
 	}

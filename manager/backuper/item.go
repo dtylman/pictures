@@ -1,15 +1,15 @@
 package backuper
 
 import (
-	"github.com/dtylman/pictures/indexer/picture"
-	"path/filepath"
 	"github.com/dtylman/pictures/conf"
+	"github.com/dtylman/pictures/indexer/picture"
 	"os"
+	"path/filepath"
 )
 
 type backupItem struct {
 	Sources []string `json:"sources"`
-	Target  string `json:"target"`
+	Target  string   `json:"target"`
 }
 
 type backupItems map[string]*backupItem
@@ -20,7 +20,7 @@ func (b backupItems) Add(image *picture.Index) error {
 	if exists {
 		item.Sources = append(b[image.MD5].Sources, image.Path)
 	} else {
-		item = &backupItem{Sources:[]string{image.Path}}
+		item = &backupItem{Sources: []string{image.Path}}
 		item.Target, err = targetFileFor(image.MD5)
 	}
 	b[image.MD5] = item

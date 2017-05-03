@@ -2,10 +2,10 @@ package location
 
 import (
 	"fmt"
+	"github.com/dtylman/pictures/indexer/picture"
 	"github.com/jasonwinn/geocoder"
 	"github.com/pariz/gountries"
 	"sync"
-	"github.com/dtylman/pictures/indexer/picture"
 )
 
 type locationCache struct {
@@ -28,7 +28,7 @@ func (l *locationCache) get(lat, long float64) *string {
 }
 
 func (l *locationCache) keyFor(lat, long float64) float64 {
-	return 0.5 * (lat + long) * (lat + long + 1) + long
+	return 0.5*(lat+long)*(lat+long+1) + long
 }
 
 func (l *locationCache) put(i *picture.Index) {

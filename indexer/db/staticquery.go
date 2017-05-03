@@ -12,10 +12,10 @@ type StaticQuery struct {
 }
 
 func NewStaticQuery(queryType int) *StaticQuery {
-	return &StaticQuery{queryType:queryType}
+	return &StaticQuery{queryType: queryType}
 }
 
-func (sq*StaticQuery) Query() error {
+func (sq *StaticQuery) Query() error {
 	sq.res = make([]*picture.Index, 0)
 	if sq.queryType == QueryDuplicates {
 		rows, err := sqldb.Query(`SELECT picture.md5, mime_type, file.path, taken, lat, long, location, album, objects, faces
@@ -38,6 +38,6 @@ func (sq*StaticQuery) Query() error {
 	return nil
 }
 
-func (sq*StaticQuery) Results() []*picture.Index {
+func (sq *StaticQuery) Results() []*picture.Index {
 	return sq.res
 }

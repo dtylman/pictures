@@ -26,7 +26,7 @@ func (pb *processorBatch) reset() {
 
 func (pb *processorBatch) add(image *picture.Index) {
 	pb.images.PushBack(image)
-	if time.Since(pb.commitTime) > time.Second * 150 {
+	if time.Since(pb.commitTime) > time.Second*150 {
 		pb.commit()
 	}
 }

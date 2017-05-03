@@ -13,9 +13,9 @@ type toolbar struct {
 }
 
 func newToolbar() *toolbar {
-	return &toolbar{buttons:make([]toolbarButton, 0)}
+	return &toolbar{buttons: make([]toolbarButton, 0)}
 }
 
-func (t*toolbar) add(caption string, icon string, handler gowd.EventHandler) {
-	t.buttons = append(t.buttons, toolbarButton{caption:caption, icon:icon, handler:handler})
+func (t *toolbar) add(caption string, icon string, handler gowd.EventHandler) {
+	t.buttons = append(t.buttons, toolbarButton{caption: caption, icon: icon, handler: handler})
 }

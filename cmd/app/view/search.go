@@ -3,9 +3,9 @@ package view
 import (
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
-	"github.com/dtylman/pictures/model"
 	"github.com/dtylman/pictures/cmd/app/view/darktheme"
 	"github.com/dtylman/pictures/indexer/db"
+	"github.com/dtylman/pictures/model"
 )
 
 type search struct {
@@ -41,7 +41,7 @@ func newSearchView() *search {
 		panic(err)
 	}
 	pnlSubtitle := s.Find("pnlSubtitle")
-	stats,err:=db.Stats()
+	stats, err := db.Stats()
 	if err != nil {
 		Root.addAlertError(err)
 	} else {
@@ -73,7 +73,7 @@ func (s *search) getContent() *gowd.Element {
 	return s.Element
 }
 
-func (s*search) populateToolbar(menu*darktheme.Menu) {
+func (s *search) populateToolbar(menu *darktheme.Menu) {
 
 }
 
