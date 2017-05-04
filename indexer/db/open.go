@@ -25,15 +25,17 @@ func openSQlite() error {
 	if err != nil {
 		return err
 	}
-	_, err = os.Stat(path)
+	empty, err := isEmpty()
 	if err != nil {
-		if os.IsNotExist(err) {
-			err = createSchema()
-			if err != nil {
-				return nil
-			}
+		return err
+	}
+	if empty {
+		err = createSchema()
+		if err != nil {
+			return err
 		}
 	}
+
 	//setup session
 	_, err = sqldb.Exec(`PRAGMA synchronous=OFF`)
 	if err != nil {

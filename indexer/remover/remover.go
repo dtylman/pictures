@@ -2,39 +2,41 @@ package remover
 
 import (
 	"github.com/dtylman/pictures/indexer/db"
-	"github.com/dtylman/pictures/indexer/picture"
 	"github.com/dtylman/pictures/tasklog"
 	"os"
 )
 
 type scanner struct {
-	itemsToRemove *picture.Queue
+	missingFiles []string
 }
 
 func (s *scanner) Remove() error {
-	db.WalkImages(s.checkImage)
-	return db.Remove(s.itemsToRemove.Keys())
+	s.missingFiles = make([]string,0)
+	db.WalkFiles(s.checkFile)
+	db.RemoveFiles(s.missingFiles)
+	return nil
 }
 
-func (s *scanner) checkImage(key string, image *picture.Index, err error) {
-	if err != nil {
-		tasklog.Error(err)
+func (s *scanner) checkFile(path string, e1 error) {
+	if e1 != nil {
+		tasklog.Error(e1)
 		return
 	}
-	if image == nil {
-		tasklog.ErrorF("error! image is null for %v", key)
+	if path == "" {
 		return
 	}
-	_, err = os.Stat(image.Path)
+	fileInfo, err := os.Stat(path)
+	if fileInfo.IsDir(){
+		return
+	}
 	if err != nil {
-		tasklog.ErrorF("image: %v, error: %v", image.Path, err)
-		s.itemsToRemove.PushBack(image)
+		tasklog.ErrorF("path: %v, error: %v", path, err)
+		s.missingFiles=append(s.missingFiles,path)
 	}
 }
 
 func newScanner() *scanner {
 	s := new(scanner)
-	s.itemsToRemove = picture.NewQueue()
 	return s
 }
 

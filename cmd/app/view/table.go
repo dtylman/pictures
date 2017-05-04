@@ -20,6 +20,7 @@ func newTableView() *table {
 }
 
 func (t *table) updateState() {
+	fmt.Println("<h1>Working....</h1>")
 	t.RemoveElements()
 	if activeSearch == nil {
 		t.AddElement(gowd.NewStyledText("Need to search first", gowd.EmphasizedText))
