@@ -99,7 +99,7 @@ func createSchema() error {
 			) WITHOUT ROWID;
 			CREATE UNIQUE INDEX idx_exif on exif (md5 ASC);`,
 		`CREATE TABLE processor (
-			    md5 TEXT NOT NULL PRIMARY KEY,
+			    md5 TEXT NOT NULL,
 			    name TEXT NOT NULL,
 			    time INTEGER
 			    ) WITHOUT ROWID;`,
@@ -159,7 +159,7 @@ func SetPhase(md5 string, name string) bool {
 	if count > 0 {
 		return false
 	}
-	res, err := tx.Exec(`INSERT INTO processor VALUES (?,?,?) `, md5, name, time.Now().Unix())
+	res, err := tx.Exec(`INSERT OR REPLACE INTO processor VALUES (?,?,?) `, md5, name, time.Now().Unix())
 	if err != nil {
 		log.Println(err)
 		return false

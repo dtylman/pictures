@@ -11,6 +11,7 @@ import (
 type search struct {
 	*gowd.Element
 	inputSearch *gowd.Element
+	txtStats    *gowd.Element
 }
 
 func newSearchView() *search {
@@ -41,12 +42,8 @@ func newSearchView() *search {
 		panic(err)
 	}
 	pnlSubtitle := s.Find("pnlSubtitle")
-	stats, err := db.Stats()
-	if err != nil {
-		panic(err)
-	} else {
-		pnlSubtitle.AddElement(gowd.NewText(stats))
-	}
+	s.txtStats = gowd.NewText("")
+	pnlSubtitle.AddElement(s.txtStats)
 	pnlSearch := s.Find("pnlSearch")
 	s.inputSearch = bootstrap.NewInput(bootstrap.InputTypeText)
 	s.inputSearch.SetClass("form-control input-lg")
@@ -67,6 +64,12 @@ func newSearchView() *search {
 }
 
 func (s *search) updateState() {
+	stats, err := db.Stats()
+	if err != nil {
+		Root.addAlertError(err)
+	} else {
+		s.txtStats.SetText(stats)
+	}
 }
 
 func (s *search) getContent() *gowd.Element {

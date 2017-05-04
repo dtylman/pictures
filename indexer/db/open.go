@@ -6,8 +6,9 @@ import (
 	"github.com/dtylman/pictures/conf"
 
 	"database/sql"
-	_ "github.com/mattn/go-sqlite3"
 	"log"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var (
