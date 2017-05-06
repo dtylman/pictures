@@ -1,9 +1,10 @@
 package remover
 
 import (
+	"os"
+
 	"github.com/dtylman/pictures/indexer/db"
 	"github.com/dtylman/pictures/tasklog"
-	"os"
 )
 
 type scanner struct {
@@ -11,28 +12,26 @@ type scanner struct {
 }
 
 func (s *scanner) Remove() error {
-	s.missingFiles = make([]string,0)
+	s.missingFiles = make([]string, 0)
 	db.WalkFiles(s.checkFile)
 	db.RemoveFiles(s.missingFiles)
 	return nil
 }
 
-func (s *scanner) checkFile(path string, e1 error) {
+func (s *scanner) checkFile(path string, e1 error) error {
 	if e1 != nil {
 		tasklog.Error(e1)
-		return
+		return nil
 	}
 	if path == "" {
-		return
+		return nil
 	}
-	fileInfo, err := os.Stat(path)
-	if fileInfo.IsDir(){
-		return
-	}
+	_, err := os.Stat(path)
 	if err != nil {
 		tasklog.ErrorF("path: %v, error: %v", path, err)
-		s.missingFiles=append(s.missingFiles,path)
+		s.missingFiles = append(s.missingFiles, path)
 	}
+	return nil
 }
 
 func newScanner() *scanner {

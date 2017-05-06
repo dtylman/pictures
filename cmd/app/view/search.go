@@ -1,6 +1,8 @@
 package view
 
 import (
+	"fmt"
+
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
 	"github.com/dtylman/pictures/cmd/app/view/darktheme"
@@ -68,7 +70,7 @@ func (s *search) updateState() {
 	if err != nil {
 		Root.addAlertError(err)
 	} else {
-		s.txtStats.SetText(stats)
+		s.txtStats.SetText(fmt.Sprintf("%d images, %d files", stats.ImagesCount, stats.FilesCount))
 	}
 }
 

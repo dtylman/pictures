@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"time"
 
@@ -257,16 +256,22 @@ func Remove(keys []string) error {
 	return tx.Commit()
 }
 
-func Stats() (string, error) {
-	var count int
-	err := sqldb.QueryRow(`SELECT count(*) FROM images_view`).Scan(&count)
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%v images", count), nil
+type Statistics struct {
+	ImagesCount int
+	FilesCount  int
 }
 
-type WalkFilesFunc func(path string, err error)
+func Stats() (Statistics, error) {
+	var s Statistics
+	err := sqldb.QueryRow(`SELECT count(*) FROM picture`).Scan(&s.ImagesCount)
+	if err != nil {
+		return s, err
+	}
+	err = sqldb.QueryRow(`SELECT count(*) FROM file`).Scan(&s.FilesCount)
+	return s, err
+}
+
+type WalkFilesFunc func(path string, err error) error
 
 func WalkFiles(wf WalkFilesFunc) {
 	rows, err := sqldb.Query(`SELECT DISTINCT path FROM file`)
@@ -279,14 +284,18 @@ func WalkFiles(wf WalkFilesFunc) {
 		var path string
 		err = rows.Scan(&path)
 		if err != nil {
-			wf("", err)
+			err = wf("", err)
 		} else {
-			wf(path, err)
+			err = wf(path, err)
+		}
+		if err != nil {
+			log.Printf("WalkFiles function error on: %v %v %v", wf, path, err)
+			return
 		}
 	}
 }
 
-func RemoveFiles(files []string) error{
+func RemoveFiles(files []string) error {
 	tx, err := sqldb.Begin()
 	if err != nil {
 		return err
@@ -304,13 +313,13 @@ func RemoveFiles(files []string) error{
 		return err
 	}
 	defer rows.Close()
-	for rows.Next(){
+	for rows.Next() {
 		var md5 string
 		err = rows.Scan(&md5)
 		if err != nil {
 			return err
 		}
-		err = removeWithTx(tx,md5)
+		err = removeWithTx(tx, md5)
 		if err != nil {
 			return err
 		}
@@ -319,7 +328,7 @@ func RemoveFiles(files []string) error{
 }
 
 //WalkImagesFunc defines a callback to scan alll images in database (use with WalkImages)
-type WalkImagesFunc func(key string, image *picture.Index, err error)
+type WalkImagesFunc func(key string, image *picture.Index, err error) error
 
 //WalkImages executes function for all images in the database
 func WalkImages(wf WalkImagesFunc) {
@@ -334,7 +343,11 @@ func WalkImages(wf WalkImagesFunc) {
 	defer rows.Close()
 	for rows.Next() {
 		image, err := rows2Image(rows)
-		wf(image.MD5, image, err)
+		err = wf(image.MD5, image, err)
+		if err != nil {
+			log.Printf("WalkImages function error on: %v %v %v", wf, image, err)
+			return
+		}
 	}
 }
 
