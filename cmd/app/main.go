@@ -3,6 +3,8 @@ package main
 import (
 	"net/http"
 	_ "net/http/pprof"
+	"os"
+	"os/signal"
 
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/pictures/cmd/app/view"
@@ -17,9 +19,18 @@ import (
 )
 
 func init() {
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt, os.Kill)
+	go func() {
+		for _ = range signalChan {
+			db.Close()
+		}
+	}()
+
 	go func() {
 		http.ListenAndServe("localhost:6060", nil)
 	}()
+
 	log.SetOutput(&lumberjack.Logger{
 		Filename:   "bome.log",
 		MaxSize:    1, // megabytes
@@ -38,7 +49,13 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+	defer func() {
+		r := recover()
+		if r != nil {
+			log.Printf("Recovered from %v", r)
+		}
+		db.Close()
+	}()
 	view.InitializeComponents()
 	err = gowd.Run(view.Root.Element)
 	if err != nil {
