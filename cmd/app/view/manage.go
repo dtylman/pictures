@@ -43,7 +43,7 @@ func newManageView() *manageView {
 	tasklog.RegisterHandler(tasklog.ManagerTask, mv.updateProgress)
 
 	mv.dialogRFS = darktheme.NewDialog("Remove From Source")
-	mv.dialogRFS.Body.AddHtml(`<p>Select a source folder to delete indexed images from<p>`)
+	mv.dialogRFS.Body.AddHtml(`<p>Select a source folder to delete indexed images from<p>`,nil)
 	mv.inputSourceFolder = gowd.NewElement("input")
 	mv.inputSourceFolder.SetAttribute("type", "file")
 	mv.inputSourceFolder.SetAttribute("nwdirectory", "")

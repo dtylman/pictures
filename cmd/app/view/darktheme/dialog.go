@@ -21,8 +21,8 @@ func NewDialog(title string) *Dialog {
 		bootstrap.NewElement("div", "modal-dialog",
 			bootstrap.NewElement("div", "modal-content", d.Header, d.Body, d.Footer)))
 	d.Element.SetAttribute("role", "dialog")
-	d.Header.AddHtml(`<button type="button" class="close" data-dismiss="modal">&times;</button>`)
+	d.Header.AddHtml(`<button type="button" class="close" data-dismiss="modal">&times;</button>`,nil)
 	d.Header.AddElement(gowd.NewStyledText(title, gowd.Heading4))
-	d.Footer.AddHtml(`<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>`)
+	d.Footer.AddHtml(`<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>`,nil)
 	return d
 }

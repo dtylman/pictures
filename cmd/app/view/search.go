@@ -6,6 +6,7 @@ import (
 	"github.com/dtylman/pictures/cmd/app/view/darktheme"
 	"github.com/dtylman/pictures/indexer/db"
 	"github.com/dtylman/pictures/model"
+	"github.com/dtylman/pictures/cmd/app/view/querybuilder"
 )
 
 type search struct {
@@ -16,6 +17,7 @@ type search struct {
 func newSearchView() *search {
 	s := new(search)
 	var err error
+	em:=gowd.NewElementMap()
 	s.Element, err = gowd.ParseElement(`<div>
                 <div class="row">
                     <div class="col-lg-12 text-center v-center">
@@ -28,6 +30,7 @@ func newSearchView() *search {
                     </div>
                 </div>
                 <br>
+                <div id="pnlAdvanced" />
                 <div class="text-center">
                     <h3>Or try one of these:</h3>
                 </div>
@@ -36,18 +39,18 @@ func newSearchView() *search {
 
                     </div>
                 </div>
-            </div>`)
+            </div>`,em)
 	if err != nil {
 		panic(err)
 	}
-	pnlSubtitle := s.Find("pnlSubtitle")
+	pnlSubtitle := em["pnlSubtitle"]
 	stats, err := db.Stats()
 	if err != nil {
 		panic(err)
 	} else {
 		pnlSubtitle.AddElement(gowd.NewText(stats))
 	}
-	pnlSearch := s.Find("pnlSearch")
+	pnlSearch := em["pnlSearch"]
 	s.inputSearch = bootstrap.NewInput(bootstrap.InputTypeText)
 	s.inputSearch.SetClass("form-control input-lg")
 	s.inputSearch.SetAttribute("placeholder", "Search anything")
@@ -59,8 +62,11 @@ func newSearchView() *search {
 	pnlSearch.AddElement(s.inputSearch)
 	pnlSearch.AddElement(bootstrap.NewElement("span", "input-group-btn", btnSearch))
 
+	pnlAdvanced := em["pnlAdvanced"]
+	pnlAdvanced.AddElement(querybuilder.NewBuilder().Element)
+
 	btnDuplicates := bootstrap.NewButton(bootstrap.ButtonDefault, "Duplicates")
-	pnlButtons := s.Find("pnlButtons")
+	pnlButtons := em["pnlButtons"]
 	pnlButtons.AddElement(btnDuplicates)
 
 	return s

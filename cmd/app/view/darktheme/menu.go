@@ -13,6 +13,7 @@ type Menu struct {
 
 func NewMenu() *Menu {
 	m := &Menu{}
+	em:=gowd.NewElementMap()
 	m.Element, _ = gowd.ParseElement(
 		`<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
 			<div class="navbar-header">
@@ -31,11 +32,11 @@ func NewMenu() *Menu {
                 		</ul>
                 		<ul class="nav navbar-nav navbar-right navbar-user" id="pnlTopRight">
             		</div>
-        	</nav>`)
+        	</nav>`,em)
 
-	m.Side = m.Find("pnlSide")
-	m.TopLeft = m.Find("pnlTopLeft")
-	m.TopRight = m.Find("pnlTopRight")
+	m.Side = em["pnlSide"]
+	m.TopLeft = em["pnlTopLeft"]
+	m.TopRight = em["pnlTopRight"]
 	return m
 }
 

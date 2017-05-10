@@ -26,10 +26,13 @@ func (a *Alerts) Add(text string) {
 
 func (a *Alerts) updateState() {
 	a.RemoveElements()
+	em:=gowd.NewElementMap()
 	for key, alert := range a.alerts {
-		elems, _ := a.AddHtml(`<div class="col-lg-6">
-						<div class="alert alert-danger">
-						<strong>Error: </strong> ` + alert + `</div>`)
+		a.AddHtml(
+			`<div class="col-lg-6">
+				<div class="alert alert-danger" id="pnlAlert">
+					<strong>Error: </strong> ` + alert +
+				`</div>`,em)
 
 		btn := bootstrap.NewButton("button", "x")
 		btn.SetClass("close")
@@ -37,6 +40,6 @@ func (a *Alerts) updateState() {
 			delete(a.alerts, key)
 			a.updateState()
 		})
-		elems[0].Kids[1].AddElement(btn)
+		em["pnlAlert"].AddElement(btn)
 	}
 }
