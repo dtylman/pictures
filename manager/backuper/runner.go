@@ -2,16 +2,18 @@ package backuper
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/dtylman/pictures/conf"
-	"github.com/dtylman/pictures/indexer/db"
-	"github.com/dtylman/pictures/indexer/picture"
-	"github.com/dtylman/pictures/tasklog"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/dtylman/pictures/conf"
+	"github.com/dtylman/pictures/indexer/db"
+	"github.com/dtylman/pictures/indexer/picture"
+	"github.com/dtylman/pictures/tasklog"
 )
 
 type runner struct {
@@ -19,18 +21,23 @@ type runner struct {
 	items   backupItems
 }
 
-func (r *runner) checkImage(key string, image *picture.Index, err error) {
+func (r *runner) checkImage(key string, image *picture.Index, err error) error {
 	if !r.Running {
-		return
+		return errors.New("Backuper stopped")
 	}
 	if err != nil {
 		log.Println(err)
-		return
+		return nil
 	}
+	if len(r.items)%25 == 0 {
+		tasklog.Status(tasklog.ManagerTask, true, 0, 0, fmt.Sprintf("Adding item %s", image.Name()))
+	}
+
 	err = r.items.Add(image)
 	if err != nil {
 		log.Println(err)
 	}
+	return nil
 }
 
 func (r *runner) fileExists(src, dest string) bool {
@@ -70,18 +77,20 @@ func (r *runner) copyFiles() error {
 			break
 		}
 		fileName := item.Sources[0]
-		tasklog.Status(tasklog.ManagerTask, true, i, total, fmt.Sprintf("Copying %s", fileName))
-		if r.fileExists(fileName, item.Target) {
-			continue
+		if i%15 == 0 {
+			tasklog.Status(tasklog.ManagerTask, true, i, total, fmt.Sprintf("Processing %s", fileName))
 		}
-		err := r.copyFile(fileName, item.Target)
-		if err != nil {
-			return err
+		if !r.fileExists(fileName, item.Target) {
+			tasklog.Status(tasklog.ManagerTask, true, i, total, fmt.Sprintf("Copying %s", fileName))
+			err := r.copyFile(fileName, item.Target)
+			if err != nil {
+				tasklog.ErrorF("Failed to backup %s: %s", fileName, err.Error())
+			}
 		}
 		i++
 	}
-	tasklog.Status(tasklog.ManagerTask, true, i, total, "Saving journal....")
 
+	tasklog.Status(tasklog.ManagerTask, true, i, total, "Saving journal....")
 	data, err := json.MarshalIndent(r.items, "", "  ")
 	if err != nil {
 		return err

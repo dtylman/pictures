@@ -1,6 +1,8 @@
 package view
 
 import (
+	"fmt"
+
 	"github.com/dtylman/gowd"
 	"github.com/dtylman/gowd/bootstrap"
 	"github.com/dtylman/pictures/cmd/app/view/darktheme"
@@ -12,6 +14,7 @@ import (
 type search struct {
 	*gowd.Element
 	inputSearch *gowd.Element
+	txtStats    *gowd.Element
 }
 
 func newSearchView() *search {
@@ -43,6 +46,10 @@ func newSearchView() *search {
 	if err != nil {
 		panic(err)
 	}
+	pnlSubtitle := s.Find("pnlSubtitle")
+	s.txtStats = gowd.NewText("")
+	pnlSubtitle.AddElement(s.txtStats)
+	pnlSearch := s.Find("pnlSearch")
 	pnlSubtitle := em["pnlSubtitle"]
 	stats, err := db.Stats()
 	if err != nil {
@@ -73,6 +80,12 @@ func newSearchView() *search {
 }
 
 func (s *search) updateState() {
+	stats, err := db.Stats()
+	if err != nil {
+		Root.addAlertError(err)
+	} else {
+		s.txtStats.SetText(fmt.Sprintf("%d images, %d files", stats.ImagesCount, stats.FilesCount))
+	}
 }
 
 func (s *search) getContent() *gowd.Element {

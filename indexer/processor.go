@@ -49,8 +49,9 @@ func newProcessor(options Options) *Processor {
 	return p
 }
 
-func (p *Processor) walkImage(key string, image *picture.Index, err error) {
+func (p *Processor) walkImage(key string, image *picture.Index, err error) error {
 	p.images.PushBack(image)
+	return nil
 }
 
 func (p *Processor) worker(wg *sync.WaitGroup, total int) {
@@ -66,6 +67,10 @@ func (p *Processor) worker(wg *sync.WaitGroup, total int) {
 	}()
 	left, image := p.images.Pop()
 	batch := newProcessorBatch()
+	defer func() {
+		tasklog.Status(tasklog.IndexerTask, IsRunning(), total-left, total, "Saving images...")
+		batch.commit()
+	}()
 	for image != nil {
 		before := *image
 		tasklog.Status(tasklog.IndexerTask, IsRunning(), total-left, total, fmt.Sprintf("Processing %s...", image.Path))
@@ -84,8 +89,7 @@ func (p *Processor) worker(wg *sync.WaitGroup, total int) {
 		}
 		left, image = p.images.Pop()
 	}
-	tasklog.Status(tasklog.IndexerTask, IsRunning(), total-left, total, "Saving images...")
-	batch.commit()
+
 }
 
 func (p *Processor) update() {

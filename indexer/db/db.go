@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"time"
 
@@ -72,6 +71,12 @@ func Index(picture *picture.Index) error {
 	return tx.Commit()
 }
 
+func isEmpty() (bool, error) {
+	tables := 0
+	err := sqldb.QueryRow(`SELECT count(*) FROM sqlite_master WHERE type='table'`).Scan(&tables)
+	return tables == 0, err
+}
+
 func createSchema() error {
 	schema := []string{
 		`CREATE TABLE picture (
@@ -84,44 +89,57 @@ func createSchema() error {
 				objects TEXT,
 				exif TEXT,
 				faces TEXT) WITHOUT ROWID;`,
+
 		`CREATE UNIQUE INDEX idx_picture on picture (md5 ASC);`,
+
 		`CREATE TABLE file (
 			    md5 TEXT NOT NULL,
 			    path TEXT NOT NULL PRIMARY KEY,
 			    album TEXT NOT NULL,
 			    time INTEGER NOT NULL
 			) WITHOUT ROWID;`,
+
 		`CREATE UNIQUE INDEX idx_file on file (path ASC);`,
+
+		`CREATE INDEX idx_file1 on file (md5 ASC);`,
+
 		`CREATE TABLE exif (
 			    md5 TEXT NOT NULL PRIMARY KEY,
 			    name TEXT NOT NULL,
 			    value TEXT
-			) WITHOUT ROWID;
-			CREATE UNIQUE INDEX idx_exif on exif (md5 ASC);`,
+			) WITHOUT ROWID;`,
+
+		`CREATE UNIQUE INDEX idx_exif on exif (md5 ASC);`,
+
 		`CREATE TABLE processor (
 			    md5 TEXT NOT NULL PRIMARY KEY,
 			    name TEXT NOT NULL,
 			    time INTEGER
 			    ) WITHOUT ROWID;`,
-		`CREATE UNIQUE INDEX idx_processor on processor (md5, name);
-		CREATE TABLE location (
+
+		`CREATE UNIQUE INDEX idx_processor on processor (md5, name);`,
+
+		`CREATE TABLE location (
 			md5 TEXT NOT NULL PRIMARY KEY,
 			street TEXT,
 			citi TEXT,
 			state TEXT,
 			postalcode TEXT,
 			country TEXT
-			) WITHOUT ROWID;
-		CREATE TABLE object (
+			) WITHOUT ROWID;`,
+
+		`CREATE TABLE object (
 			md5 TEXT NOT NULL PRIMARY KEY,
 			name TEXT NOT NULL,
 			prob NUMBER NOT NULL
 			) WITHOUT ROWID`,
+
 		`CREATE VIEW images_view AS
 			SELECT DISTINCT picture.md5, mime_type,	file.path,
 			taken, lat, long, location, album, objects, faces
 			FROM picture
 			INNER JOIN file ON file.md5=picture.md5
+			GROUP by picture.md5
 			ORDER BY taken, file.time`,
 	}
 	return execMultiple(schema)
@@ -135,6 +153,7 @@ func execMultiple(sql []string) error {
 	defer tx.Rollback()
 	for _, statement := range sql {
 		_, err := tx.Exec(statement)
+		log.Println("Executed ", statement, err)
 		if err != nil {
 			return err
 		}
@@ -159,7 +178,7 @@ func SetPhase(md5 string, name string) bool {
 	if count > 0 {
 		return false
 	}
-	res, err := tx.Exec(`INSERT INTO processor VALUES (?,?,?) `, md5, name, time.Now().Unix())
+	_, err = tx.Exec(`INSERT OR REPLACE INTO processor VALUES (?,?,?)`, md5, name, time.Now().Unix())
 	if err != nil {
 		log.Println(err)
 		return false
@@ -169,12 +188,7 @@ func SetPhase(md5 string, name string) bool {
 		log.Println(err)
 		return false
 	}
-	ar, err := res.RowsAffected()
-	if err != nil {
-		log.Println(err)
-		return false
-	}
-	return ar > 0
+	return true
 }
 
 //HasPath returns true if a path exists in the database
@@ -242,17 +256,79 @@ func Remove(keys []string) error {
 	return tx.Commit()
 }
 
-func Stats() (string, error) {
-	var count int
-	err := sqldb.QueryRow(`SELECT count(*) FROM images_view`).Scan(&count)
+type Statistics struct {
+	ImagesCount int
+	FilesCount  int
+}
+
+func Stats() (Statistics, error) {
+	var s Statistics
+	err := sqldb.QueryRow(`SELECT count(*) FROM picture`).Scan(&s.ImagesCount)
 	if err != nil {
-		return "", err
+		return s, err
 	}
-	return fmt.Sprintf("%v images", count), nil
+	err = sqldb.QueryRow(`SELECT count(*) FROM file`).Scan(&s.FilesCount)
+	return s, err
+}
+
+type WalkFilesFunc func(path string, err error) error
+
+func WalkFiles(wf WalkFilesFunc) {
+	rows, err := sqldb.Query(`SELECT DISTINCT path FROM file`)
+	if err != nil {
+		wf("", err)
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var path string
+		err = rows.Scan(&path)
+		if err != nil {
+			err = wf("", err)
+		} else {
+			err = wf(path, err)
+		}
+		if err != nil {
+			log.Printf("WalkFiles function error on: %v %v %v", wf, path, err)
+			return
+		}
+	}
+}
+
+func RemoveFiles(files []string) error {
+	tx, err := sqldb.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	for _, file := range files {
+		_, err = tx.Exec(`DELETE FROM file WHERE path=?`, file)
+		if err != nil {
+			return err
+		}
+	}
+	//get pictures with no files, and delete them
+	rows, err := tx.Query(`SELECT picture.md5 FROM picture LEFT JOIN file ON file.md5=picture.md5 WHERE file.md5 IS NULL`)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var md5 string
+		err = rows.Scan(&md5)
+		if err != nil {
+			return err
+		}
+		err = removeWithTx(tx, md5)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 //WalkImagesFunc defines a callback to scan alll images in database (use with WalkImages)
-type WalkImagesFunc func(key string, image *picture.Index, err error)
+type WalkImagesFunc func(key string, image *picture.Index, err error) error
 
 //WalkImages executes function for all images in the database
 func WalkImages(wf WalkImagesFunc) {
@@ -267,7 +343,11 @@ func WalkImages(wf WalkImagesFunc) {
 	defer rows.Close()
 	for rows.Next() {
 		image, err := rows2Image(rows)
-		wf(image.MD5, image, err)
+		err = wf(image.MD5, image, err)
+		if err != nil {
+			log.Printf("WalkImages function error on: %v %v %v", wf, image, err)
+			return
+		}
 	}
 }
 

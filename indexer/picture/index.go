@@ -113,7 +113,11 @@ func (i *Index) populateMD5(file *os.File) error {
 }
 
 func (i *Index) ExifString() string {
-	return fmt.Sprintf("%v", i.Exif)
+	output := ""
+	for key, value := range i.Exif {
+		output += fmt.Sprintf("%s: %v ", key, value)
+	}
+	return output
 }
 
 func (i *Index) Name() string {

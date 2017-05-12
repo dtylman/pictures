@@ -1,13 +1,14 @@
 package model
 
 import (
-	"github.com/dtylman/pictures/conf"
-	"github.com/dtylman/pictures/indexer/db"
-	"github.com/dtylman/pictures/indexer/picture"
 	"log"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/dtylman/pictures/conf"
+	"github.com/dtylman/pictures/indexer/db"
+	"github.com/dtylman/pictures/indexer/picture"
 )
 
 type ThumbItem struct {
@@ -84,6 +85,8 @@ func (s *Search) doQuery() error {
 	var q db.Query
 	if s.query == "duplicates" {
 		q = db.NewStaticQuery(db.QueryDuplicates)
+	} else if s.query == "" {
+		q = db.NewTermQuery(s.query, false, 100)
 	} else {
 		q = db.NewTermQuery(s.query, false, db.NOLIMIT)
 	}
